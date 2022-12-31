@@ -35,6 +35,8 @@ int main() {
 	testcase1.printCFG();
 	testcase1Answer.printCFG();
 	cout << (testcase1 == testcase1Answer);
+	CFG aaa;
+	aaa.printCFG();
 	return 0;
 
 }

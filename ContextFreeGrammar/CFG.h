@@ -78,6 +78,7 @@ public:
 		: mNonTerminals(other.mNonTerminals), mTerminals(other.mTerminals),
 		mRules(other.mRules), mAxiom(other.mAxiom) {}
 	CFG() {
+		mAxiom = Token("S", "char");
 		(*this) = emptyLanguage();
 	}
 	CFG& operator=(const CFG& other) noexcept;

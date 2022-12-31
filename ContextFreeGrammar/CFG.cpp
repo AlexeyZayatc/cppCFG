@@ -147,8 +147,6 @@ set<Token> CFG::getLambdaNonTerminals()
 	return lambdaNonTerminals;
 }
 
-
-
 CFG CFG::removeBadNonTerminalsAndRules()
 {
 	if (isLanguageEmpty())
