@@ -137,9 +137,9 @@ set<Token> CFG::getLambdaNonTerminals()
 		lambdaNonTerminalsTemp = lambdaNonTerminals;
 		for (auto& rulePair : mRules) {
 			for (auto& rhs : mRules[rulePair.first]) {
-				if (rhs.empty())
+				if (onlyLambadaNT(rhs))
 					lambdaNonTerminals.insert(rulePair.first);
-				else if (onlyLambadaNT(rhs))
+				else if (rhs[0].mLexem.empty())
 					lambdaNonTerminals.insert(rulePair.first);
 			}
 		}
@@ -201,7 +201,7 @@ CFG CFG::removeLambdaRules()
 		return true;
 	};
 	auto doesHaveLambda = [&](vector<Token> curChain) {
-		if (curChain.empty())
+		if (curChain[0].mLexem.empty())
 			return true;
 		for (auto& token : curChain)
 			if (lambdaNonTerminals.contains(token))

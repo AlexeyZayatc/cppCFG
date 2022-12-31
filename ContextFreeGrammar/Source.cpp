@@ -14,78 +14,27 @@ int main() {
 		"E"
 	);
 
-	CFG   testcase2(
-		{ "S"},
-		{"a","b"},
+	CFG   testcase1(
+		{ "S" },
+		{ "a","b" },
 			{
 				{"S", {"aSbS","bSaS",""}},
 			},
-		"S"
-	);
-
-	CFG   testcase3(
-		{ "S","A","B","M","N","K"},
-		{ "a","b" },
-			{
-				{"S", {"KNM"}},
-				{"A", {""}},
-				{"B", {""}},
-				{"M", {"AB"}},
-				{"N", {"Ab"}},
-				{"K", {"ab"}}
-			},
 			"S"
 			);
-	CFG   testcase4(
-		{ "S","A","B","M","N","K" },
-		{ "a","b","c","p"},
-			{
-				{"S", {"KNM"}},
-				{"A", {"", "c"}},
-				{"B", {"", "p"}},
-				{"M", {"AB"}},
-				{"N", {"Ab"}},
-				{"K", {"ab"}}
-			},
-		"S"
-	);
-	CFG   testcase5(
-		{ "S","A","B","M","N","K" },
+	CFG   testcase1Answer(
+		{ "S", "S\'" },
 		{ "a","b" },
 			{
-				{"S", {"KNM"}},
-				{"A", {""}},
-				{"B", {""}},
-				{"M", {"AB","a"}},
-				{"N", {"Ab"}},
-				{"K", {"ab"}}
+				{"S", {"aSbS","bSaS","abS","aSb","ab","ba","bSa","baS"}},
+				{"S\'", {"S",""}}
 			},
-		"S"
+		"S\'"
 	);
-	CFG   testcase6(
-		{ "S","A","B","M" },
-		{ "a","b" ,"c", "k"},
-			{
-				{"S", {"Mk"}},
-				{"A", {"","c"}},
-				{"B", {""}},
-				{"M", {"AB"}}
-			},
-		"S"
-	);
-	CFG attemp = cfgMath;
-
-	//attemp = testcase2.removeLambdaRules();
-	//attemp.printCFG();
-	//attemp = testcase3.removeLambdaRules();
-	//attemp.printCFG();
-    //attemp = testcase4.removeLambdaRules();
-	//attemp.printCFG();
-	//attemp = testcase5.removeLambdaRules();
-	//attemp.printCFG();
-	attemp = testcase6.removeLambdaRules();
-	attemp.printCFG();
-
+	testcase1 = testcase1.removeLambdaRules();
+	testcase1.printCFG();
+	testcase1Answer.printCFG();
+	cout << (testcase1 == testcase1Answer);
 	return 0;
 
 }

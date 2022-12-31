@@ -60,6 +60,7 @@ public:
 			vector<Token> temp;
 			for (auto&& vec : vectors) {
 				temp.clear();
+				if (vec.empty()) temp.push_back(Token("", "char"));
 				for (unsigned i = 0; i < vec.size(); i++) {
 					temp.push_back(Token(vec.substr(i, 1), "char"));
 				}
@@ -76,6 +77,9 @@ public:
 	CFG(const CFG& other)
 		: mNonTerminals(other.mNonTerminals), mTerminals(other.mTerminals),
 		mRules(other.mRules), mAxiom(other.mAxiom) {}
+	CFG() {
+		(*this) = emptyLanguage();
+	}
 	CFG& operator=(const CFG& other) noexcept;
 	CFG& operator=(CFG&& other) noexcept;
 	void printCFG();

@@ -258,5 +258,133 @@ namespace UnitTest
 			Assert::AreEqual(attemp, test_case2_answer);
 
 		}
+		TEST_METHOD(removeLambdaRules) {
+
+			CFG   testcase1(
+				{ "S" },
+				{ "a","b" },
+			{
+				{"S", {"aSbS","bSaS",""}},
+			},
+			"S"
+			);
+			CFG   testcase1Answer(
+				{ "S", "S\'"},
+				{ "a","b" },
+			{
+				{"S", {"aSbS","bSaS","abS","aSb","ab","ba","bSa","baS"}},
+				{"S\'", {"S",""}}
+			},
+			"S\'"
+			);
+			CFG attemp = testcase1.removeLambdaRules();
+			Assert::AreEqual(attemp, testcase1Answer);
+
+			CFG   testcase2(
+				{ "S","A","B","M","N","K" },
+				{ "a","b" },
+			{
+				{"S", {"KNM"}},
+				{"A", {""}},
+				{"B", {""}},
+				{"M", {"AB"}},
+				{"N", {"Ab"}},
+				{"K", {"ab"}}
+			},
+				"S"
+			);
+			CFG   testcase2Answer(
+				{ "N","K","S"},
+				{ "a","b" },
+			{
+				{"S", {"KN"}},
+				{"N", {"b"}},
+				{"K", {"ab"}}
+			},
+				"S"
+			);
+			attemp = testcase2.removeLambdaRules();
+			Assert::AreEqual(attemp, testcase2Answer);
+
+			CFG   testcase3(
+				{ "S","A","B","M","N","K" },
+				{ "a","b","c","p" },
+			{
+				{"S", {"KNM"}},
+				{"A", {"", "c"}},
+				{"B", {"", "p"}},
+				{"M", {"AB"}},
+				{"N", {"Ab"}},
+				{"K", {"ab"}}
+			},
+				"S"
+			);
+			CFG   testcase3Answer(
+				{ "S","A","B","M","N","K" },
+				{ "a","b","c","p" },
+			{
+				{"S", {"KNM","KN"}},
+				{"A", {"c"}},
+				{"B", {"p"}},
+				{"M", {"AB","A","B"}},
+				{"N", {"Ab","b"}},
+				{"K", {"ab"}}
+			},
+				"S"
+			);
+			attemp = testcase3.removeLambdaRules();
+			Assert::AreEqual(attemp, testcase3Answer);
+
+			CFG   testcase4(
+				{ "S","A","B","M","N","K" },
+				{ "a","b" },
+			{
+				{"S", {"KNM"}},
+				{"A", {""}},
+				{"B", {""}},
+				{"M", {"AB","a"}},
+				{"N", {"Ab"}},
+				{"K", {"ab"}}
+			},
+				"S"
+			);
+			CFG   testcase4Answer(
+				{ "S","M","N","K" },
+				{ "a","b" },
+			{
+				{"S", {"KN","KNM"}},
+				{"M", {"a"}},
+				{"N", {"b"}},
+				{"K", {"ab"}}
+			},
+				"S"
+			);
+			attemp = testcase4.removeLambdaRules();
+			Assert::AreEqual(attemp, testcase4Answer);
+
+			CFG   testcase5(
+				{ "S","A","B","M" },
+				{ "c", "k" },
+			{
+				{"S", {"Mk"}},
+				{"A", {"","c"}},
+				{"B", {""}},
+				{"M", {"AB"}}
+			},
+				"S"
+			);
+			CFG   testcase5Answer(
+				{ "S","A", "M" },
+				{ "c", "k" },
+			{
+				{"S", {"Mk","k"}},
+				{"A", {"c"}},
+				{"M", {"A"}}
+			},
+				"S"
+			);
+			attemp = testcase5.removeLambdaRules();
+			Assert::AreEqual(attemp, testcase5Answer);
+		}
 	};
 }
