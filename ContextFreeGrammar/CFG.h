@@ -5,34 +5,15 @@
 #include <set>
 #include <map>
 #include <algorithm>
-
-
 using namespace std;
+
 struct Token {
-	Token() {
-		mLexem = "";
-		mLexemType = "";
-	}
-	Token(const string& lxm, const string& lxmType)
-		: mLexem(lxm), mLexemType(lxmType) {}
-	Token(const Token& tkn) noexcept
-		: mLexem(tkn.mLexem), mLexemType(tkn.mLexemType) {}
-	Token(Token&& tkn) noexcept :
-		mLexem(move(tkn.mLexem)),
-		mLexemType(move(tkn.mLexemType))
-	{}
-	Token& operator=(const Token& other) noexcept {
-		if (this == &other)
-			return *this;
-		mLexem = other.mLexem;
-		mLexemType = other.mLexemType;
-		return *this;
-	}
-	Token& operator=(Token&& other) noexcept {
-		mLexem = move(other.mLexem);
-		mLexemType = move(other.mLexemType);
-		return *this;
-	}
+	Token();
+	Token(const string& lxm, const string& lxmType) noexcept;
+	Token(const Token& tkn) noexcept;
+	Token(Token&& tkn) noexcept;
+	Token& operator=(const Token& other) noexcept;
+	Token& operator=(Token&& other) noexcept;
 	strong_ordering operator<=> (const Token&) const = default;
 	friend ostream& operator <<(ostream& ostr, const Token& token);
 	string mLexem;
@@ -41,46 +22,20 @@ struct Token {
 
 typedef vector<vector<Token>> ruleRHS;
 typedef map<Token, ruleRHS> ruleDict;
+
 class CFG
 {
 public:
 	CFG(const set<string>& nonTerminals,
 		const set<string>& terminals,
 		const map<string, vector<string>>& rules,
-		const string& axiom) {
-		auto convert = [&](set<string> ssv, set<Token>& dst) {
-			for (auto&& elem : ssv)
-				dst.insert(move(Token(elem, "char")));
-		};
-		convert(nonTerminals, mNonTerminals);
-		convert(terminals, mTerminals);
-		for (auto&& rule : rules) {
-			auto currentToken = Token(rule.first, "char");
-			auto& vectors = rule.second;
-			vector<Token> temp;
-			for (auto&& vec : vectors) {
-				temp.clear();
-				if (vec.empty()) temp.push_back(Token("", "char"));
-				for (unsigned i = 0; i < vec.size(); i++) {
-					temp.push_back(Token(vec.substr(i, 1), "char"));
-				}
-				mRules[currentToken].push_back(temp);
-			}
-		}
-		mAxiom = Token(axiom, "char");
-	}
+		const string& axiom);
 	CFG(const set<Token>& nonTerminals,
 		const set<Token>& terminals,
 		const ruleDict& rules,
-		const Token& axiom)
-		: mNonTerminals(nonTerminals), mTerminals(terminals), mRules(rules), mAxiom(axiom) {}
-	CFG(const CFG& other)
-		: mNonTerminals(other.mNonTerminals), mTerminals(other.mTerminals),
-		mRules(other.mRules), mAxiom(other.mAxiom) {}
-	CFG() {
-		mAxiom = Token("S", "char");
-		(*this) = emptyLanguage();
-	}
+		const Token& axiom);
+	CFG(const CFG& other);
+	CFG();
 	CFG& operator=(const CFG& other) noexcept;
 	CFG& operator=(CFG&& other) noexcept;
 	void printCFG();

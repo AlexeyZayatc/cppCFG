@@ -1,7 +1,140 @@
 ﻿#include "CFG.h"
+#include "Exception.h"
+
+Token::Token() : mLexem(""), mLexemType("") {}
+Token::Token(const string& lxm, const string& lxmType) noexcept
+	: mLexem(lxm), mLexemType(lxmType) {}
+Token::Token(const Token& tkn) noexcept
+	: mLexem(tkn.mLexem), mLexemType(tkn.mLexemType) {}
+Token::Token(Token&& tkn) noexcept :
+	mLexem(move(tkn.mLexem)),
+	mLexemType(move(tkn.mLexemType)) {}
+Token& Token::operator=(const Token& other) noexcept {
+	if (this == &other)
+		return *this;
+	mLexem = other.mLexem;
+	mLexemType = other.mLexemType;
+	return *this;
+}
+Token& Token::operator=(Token&& other) noexcept {
+	mLexem = move(other.mLexem);
+	mLexemType = move(other.mLexemType);
+	return *this;
+}
+
 std::ostream& operator <<(std::ostream& ostr, const Token& token) {
 	std::cout << '(' << token.mLexem << ',' << token.mLexemType << ')';
 	return ostr;
+}
+
+CFG::CFG(const set<string>& nonTerminals,
+	const set<string>& terminals,
+	const map<string, vector<string>>& rules,
+	const string& axiom) {
+	//checks for input
+	try {
+		if (axiom.empty()) {
+			throw Exception("Lambda can't be an axiom\n");
+		}
+		if (!nonTerminals.contains(axiom))
+			throw Exception("Non-terminals set doesn't have axiom\n");
+		for (auto& nt : nonTerminals)
+			for (auto& t : terminals)
+				if (nt == t)
+					throw Exception("Terminal and Non-terminal sets intersect\n");
+		map<string, vector<string>> rulesCopy = rules;
+		std::string cursubStr;
+		for (auto& rulePair : rulesCopy) {
+			if (!nonTerminals.contains(rulePair.first))
+				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
+			for (auto& curRule : rulesCopy[rulePair.first])
+				for (unsigned i = 0; i < curRule.size(); i++)
+				{
+					cursubStr = curRule.substr(i, 1);
+					if (!nonTerminals.contains(cursubStr))
+						if (!terminals.contains(cursubStr) && !cursubStr.empty())
+							throw Exception("Symbol is not in non-terminals or terminals set\n");
+				}
+		}
+	}
+	catch (Exception e) {
+		cerr << e.what();
+		mAxiom = Token("S", "char");
+		mNonTerminals.insert(mAxiom);
+		ruleRHS rRHS;
+		vector<Token> temp; temp.push_back(Token("", "char"));
+		rRHS.push_back(temp);
+		mRules[mAxiom] = rRHS;
+		return;
+	}
+	auto convert = [&](set<string> setOfStrings, set<Token>& setOfTokens) {
+		for (auto&& elem : setOfStrings)
+			setOfTokens.insert(move(Token(elem, "char")));
+	};
+	convert(nonTerminals, mNonTerminals);
+	convert(terminals, mTerminals);
+	for (auto&& rule : rules) {
+		auto currentToken = Token(rule.first, "char");
+		auto& vectors = rule.second;
+		vector<Token> temp;
+		for (auto&& vec : vectors) {
+			temp.clear();
+			if (vec.empty()) temp.push_back(Token("", "char"));
+			for (unsigned i = 0; i < vec.size(); i++) {
+				temp.push_back(Token(vec.substr(i, 1), "char"));
+			}
+			mRules[currentToken].push_back(temp);
+		}
+	}
+	mAxiom = Token(axiom, "char");
+}
+CFG::CFG(const set<Token>& nonTerminals,
+	const set<Token>& terminals,
+	const ruleDict& rules,
+	const Token& axiom)
+	: mNonTerminals(nonTerminals), mTerminals(terminals), mRules(rules), mAxiom(axiom) {
+	//checks for input
+	try {
+		if (axiom.mLexem.empty()) {
+			throw Exception("Lambda can't be an axiom");
+		}
+		if (!nonTerminals.contains(axiom))
+			throw Exception("Non-terminals set doesn't have axiom.");
+		for (auto& nt : nonTerminals)
+			for (auto& t : terminals)
+				if (nt == t)
+					throw Exception("Terminal and Non-terminal sets intersect");
+		ruleDict rulesCopy = rules;
+		for (auto& rulePair : rulesCopy) {
+			if (!nonTerminals.contains(rulePair.first))
+				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
+			for (auto& curRule : rulesCopy[rulePair.first])
+				for (unsigned i = 0; i < curRule.size(); i++)
+				{
+					if (!nonTerminals.contains(curRule[i]))
+						if (!terminals.contains(curRule[i]) && !curRule[i].mLexem.empty())
+							throw Exception("Symbol is not in non-terminals or terminals set\n");
+				}
+		}
+	}
+	catch (Exception e) {
+		cerr << e.what();
+		mAxiom = Token("S", "char");
+		mNonTerminals.clear();
+		mNonTerminals.insert(mAxiom);
+		ruleRHS rRHS;
+		vector<Token> temp; temp.push_back(Token("", "char"));
+		rRHS.push_back(temp);
+		mRules.clear();
+		mRules[mAxiom] = rRHS;
+		return;
+	}
+}
+CFG::CFG(const CFG & other)
+	: mNonTerminals(other.mNonTerminals), mTerminals(other.mTerminals),
+	mRules(other.mRules), mAxiom(other.mAxiom) {}
+CFG::CFG() {
+	(*this) = emptyLanguage();
 }
 
 CFG& CFG::operator=(const CFG& other) noexcept
@@ -81,10 +214,11 @@ bool CFG::isLanguageEmpty()
 
 CFG CFG::emptyLanguage()
 {
-	set<Token> nT; nT.insert(mAxiom);
+	Token axiom("S", "char");
+	set<Token> nT; nT.insert(axiom);
 	ruleDict rls;
-	rls[mAxiom].push_back({Token("","char")});
-	return CFG(nT, set<Token>(), rls, mAxiom);
+	rls[axiom].push_back({Token("","char")});
+	return CFG(nT, set<Token>(), rls, axiom);
 }
 
 CFG CFG::removeUnreachableSymbols()
