@@ -46,6 +46,7 @@ public:
 	CFG removeUselessSymbols();
 	CFG removeBadNonTerminalsAndRules();
 	CFG removeLambdaRules();
+	CFG removeLeftRecursion();
 	wstring toWString() const;
 private:
 	bool isRuleContainOnlyGoodTokens(const vector<Token>& rhs, const set<Token>& goodTokens) noexcept;

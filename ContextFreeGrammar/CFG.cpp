@@ -293,7 +293,7 @@ CFG CFG::removeBadNonTerminalsAndRules()
 		else {
 			ruleRHS ruleBuffer;
 			for (auto& rhs : rulePair.second)
-				if (isRuleContainOnlyGoodTokens(rhs, goodNonTerminals))
+				if (isRuleContainOnlyGoodTokens(rhs, goodNonTerminals) || rhs[0].mLexem.empty())
 					ruleBuffer.push_back(rhs);
 			rulesCopy[rulePair.first] = ruleBuffer;
 		}
@@ -404,6 +404,67 @@ CFG CFG::removeLambdaRules()
 		return CFG(finalNonTerminals, mTerminals, rulesWithLambdaNonTerminals, newAxiom);
 	}
 	return CFG(finalNonTerminals,mTerminals,rulesWithLambdaNonTerminals,mAxiom);
+}
+
+CFG CFG::removeLeftRecursion()
+{
+	if (isLanguageEmpty())
+		return emptyLanguage();
+	CFG newGrammar = removeLambdaRules().removeUselessSymbols();
+	vector<Token> orderedTokens;
+	for (auto& nonTerminal : mNonTerminals)
+		orderedTokens.push_back(nonTerminal);
+	unsigned i, j;
+	i = 0;
+	do {
+		Token currentNonTerminal = orderedTokens[i];
+		for (auto& rhs : newGrammar.mRules[currentNonTerminal])
+			if (rhs[0] == currentNonTerminal) {
+				Token newNonTerminal(currentNonTerminal.mLexem + "\'",currentNonTerminal.mLexemType);
+				ruleRHS newNonTerminalRules;
+				ruleRHS noRecursionRules;
+				for (auto& currentRule : newGrammar.mRules[currentNonTerminal]) {
+					if (currentRule[0] == currentNonTerminal) {
+						vector<Token> newRule(currentRule.begin()+1,currentRule.end());
+						newNonTerminalRules.push_back(newRule);
+						newRule.push_back(newNonTerminal);
+						newNonTerminalRules.push_back(newRule);
+					}
+					else {
+						noRecursionRules.push_back(currentRule);
+						vector<Token> temp = currentRule;
+						temp.push_back(newNonTerminal);
+						noRecursionRules.push_back(temp);
+					}
+				}
+				newGrammar.mRules[currentNonTerminal] = noRecursionRules;
+				newGrammar.mNonTerminals.insert(newNonTerminal);
+				newGrammar.mRules[newNonTerminal] = newNonTerminalRules;
+				break;
+			}
+		if (i == orderedTokens.size()-1)
+			break;
+		j = -1;
+		i++;
+		do {
+			j++;
+			ruleRHS tempRules;
+			for (auto& currentRule : newGrammar.mRules[orderedTokens[i]]) {
+				if (currentRule[0] == orderedTokens[j]) {
+					for (auto& prevNonTerminalRule : newGrammar.mRules[orderedTokens[j]]) {
+						vector<Token> tempChain(prevNonTerminalRule);
+						tempChain.insert(tempChain.end(), currentRule.begin() + 1, currentRule.end());
+						tempRules.push_back(tempChain);
+					}
+				}
+				else {
+					tempRules.push_back(currentRule);
+				}
+			}
+			newGrammar.mRules[orderedTokens[i]] = tempRules;
+		} while (j != i - 1);
+	} while (true);
+	return newGrammar.removeUselessSymbols();
 }
 
 set<Token> CFG::getGoodNonTerminals()
