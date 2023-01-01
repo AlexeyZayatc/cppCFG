@@ -39,6 +39,12 @@ CFG::CFG(const set<string>& nonTerminals,
 		if (!nonTerminals.contains(axiom))
 			throw Exception("Non-terminals set doesn't have axiom\n");
 		for (auto& nt : nonTerminals)
+			if (nt.empty())
+				throw Exception("Non-terminals has lambda string");
+		for (auto& t : terminals)
+			if (t.empty())
+				throw Exception("Terminals has lambda string");
+		for (auto& nt : nonTerminals)
 			for (auto& t : terminals)
 				if (nt == t)
 					throw Exception("Terminal and Non-terminal sets intersect\n");
@@ -100,11 +106,16 @@ CFG::CFG(const set<string>& nonTerminals,
 		if (!nonTerminals.contains(axiom.mLexem))
 			throw Exception("Non-terminals set doesn't have axiom\n");
 		for (auto& nt : nonTerminals)
+			if (nt.empty())
+				throw Exception("Non-terminals has lambda string");
+		for (auto& t : terminals)
+			if (t.empty())
+				throw Exception("Terminals has lambda string");
+		for (auto& nt : nonTerminals)
 			for (auto& t : terminals)
 				if (nt == t)
 					throw Exception("Terminal and Non-terminal sets intersect\n");
 		map<string, vector<vector<string>>> rulesCopy = rules;
-		std::string cursubStr;
 		for (auto& rulePair : rulesCopy) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
@@ -139,10 +150,10 @@ CFG::CFG(const set<string>& nonTerminals,
 		vector<Token> temp;
 		for (auto&& vec : vectors) {
 			temp.clear();
-			if (vec.empty()) temp.push_back(Token("", "char"));
 			for (unsigned i = 0; i < vec.size(); i++) {
-				temp.push_back(Token(vec[i], "char"));
+				if(!vec[i].empty()) temp.push_back(Token(vec[i], "char"));
 			}
+			if (temp.empty()) temp.push_back(Token("", "char"));
 			mRules[currentToken].push_back(temp);
 		}
 	}
@@ -152,7 +163,7 @@ CFG::CFG(const set<Token>& nonTerminals,
 	const set<Token>& terminals,
 	const ruleDict& rules,
 	const Token& axiom)
-	: mNonTerminals(nonTerminals), mTerminals(terminals), mRules(rules), mAxiom(axiom) {
+	: mNonTerminals(nonTerminals), mTerminals(terminals), mAxiom(axiom) {
 	//checks for input
 	try {
 		if (axiom.mLexem.empty()) {
@@ -160,6 +171,12 @@ CFG::CFG(const set<Token>& nonTerminals,
 		}
 		if (!nonTerminals.contains(axiom))
 			throw Exception("Non-terminals set doesn't have axiom.");
+		for (auto& nt : nonTerminals)
+			if (nt.mLexem.empty())
+				throw Exception("Non-terminals has lambda token");
+		for (auto& t : terminals)
+			if (t.mLexem.empty())
+				throw Exception("Terminals has lambda token");
 		for (auto& nt : nonTerminals)
 			for (auto& t : terminals)
 				if (nt == t)
@@ -188,6 +205,19 @@ CFG::CFG(const set<Token>& nonTerminals,
 		mRules.clear();
 		mRules[mAxiom] = rRHS;
 		return;
+	}
+	for (auto&& rule : rules) {
+		auto& currentToken = rule.first;
+		auto& vectors = rule.second;
+		vector<Token> temp;
+		for (auto&& vec : vectors) {
+			temp.clear();
+			for (unsigned i = 0; i < vec.size(); i++) {
+				if (!vec[i].mLexem.empty()) temp.push_back(vec[i]);
+			}
+			if (temp.empty()) temp.push_back(Token("", "char"));
+			mRules[currentToken].push_back(temp);
+		}
 	}
 }
 CFG::CFG(const CFG & other)
@@ -542,10 +572,140 @@ CFG CFG::makeChomskyNormalForm()
 	//5) обработать правила n=2
 	//   A->aB-> a'B, A->Ba ->Ba', A->ab ->a'b'
 	//6) для новых нетерминалов a'(a is in T) add rule a'->a
+	CFG newGrammar = removeLambdaRules();
 	ruleDict newRules;
-	ruleRHS ruleVector;
+	//for (auto& axiomRule : mRules[mAxiom])
+	//	if (axiomRule[0] == Token("", "char") && axiomRule.size() == 1){
+	//		newRules[mAxiom].push_back(axiomRule);
+	//		break;
+	//	}
 
-	return CFG();
+	for (auto& rulePair : newGrammar.mRules)
+		for (auto& currentRule : newGrammar.mRules[rulePair.first]) {
+			switch (currentRule.size()) {
+			case 1:
+				newRules[rulePair.first].push_back(currentRule);
+				break;
+			case 2:
+				if (newGrammar.mNonTerminals.contains(currentRule[0])) // rules AB or Ab
+				{
+					if(newGrammar.mNonTerminals.contains(currentRule[1]))
+						newRules[rulePair.first].push_back(currentRule);
+					else {
+						vector<Token> tempRule = currentRule;
+						tempRule.pop_back();
+						Token newNonTerminal(currentRule[1].mLexem+"\'", currentRule[1].mLexemType);
+						tempRule.push_back(newNonTerminal);
+						vector<Token> terminalRule; terminalRule.push_back(currentRule[1]);
+						newRules[newNonTerminal].push_back(terminalRule);
+						newRules[rulePair.first].push_back(tempRule);
+						newGrammar.mNonTerminals.insert(newNonTerminal);
+					}
+				}
+				else { //rules aB or aa
+					if (newGrammar.mNonTerminals.contains(currentRule[1])) {
+						vector<Token> tempRule;
+						Token newNonTerminal(currentRule[0].mLexem + "\'", currentRule[1].mLexemType);
+						tempRule.push_back(newNonTerminal);
+						tempRule.push_back(currentRule[1]);
+						vector<Token> terminalRule; terminalRule.push_back(currentRule[0]);
+						newRules[newNonTerminal].push_back(terminalRule);
+						newRules[rulePair.first].push_back(tempRule);
+						newGrammar.mNonTerminals.insert(newNonTerminal);
+					}
+					else {
+						vector<Token> tempRule; vector<Token> firstRule; vector<Token> secondRule;
+						Token firstNT = Token(currentRule[0].mLexem + "\'", currentRule[0].mLexemType); firstRule.push_back(currentRule[0]);
+						Token secondNT = Token(currentRule[1].mLexem + "\'", currentRule[1].mLexemType); secondRule.push_back(currentRule[1]);
+						tempRule.push_back(firstNT); tempRule.push_back(secondNT);
+						newRules[rulePair.first].push_back(tempRule);
+						newRules[firstNT].push_back(firstRule);
+						newRules[secondNT].push_back(secondRule);
+						newGrammar.mNonTerminals.insert(firstNT);
+						newGrammar.mNonTerminals.insert(secondNT);
+					}
+				}
+				break;
+			default:
+				Token newNonTerminal;
+				Token newGroupNonTerminal;
+				vector<Token> ruleChain;
+				string groupLexem;
+				unsigned i = 0;
+				Token currentLHS = rulePair.first;
+				do  {
+					ruleChain.clear();
+					groupLexem = "<";
+					if (newGrammar.mTerminals.contains(currentRule[i]))
+					{
+						newNonTerminal = Token(currentRule[i].mLexem + "\'", currentRule[i].mLexemType);
+						vector<Token> temp; temp.push_back(currentRule[i]);
+						newRules[newNonTerminal].push_back(temp);
+						newGrammar.mNonTerminals.insert(newNonTerminal);
+					}
+					else
+						newNonTerminal = currentRule[i];
+					for (unsigned j = i+1; j < currentRule.size(); j++) {
+						groupLexem += currentRule[j].mLexem;
+					}
+					groupLexem += ">";
+					newGroupNonTerminal = Token(groupLexem, "char");
+					newGrammar.mNonTerminals.insert(newGroupNonTerminal);
+					ruleChain.push_back(newNonTerminal); ruleChain.push_back(newGroupNonTerminal);
+					newRules[currentLHS].push_back(ruleChain);
+					currentLHS = newGroupNonTerminal;
+				} while (++i < currentRule.size()-2);
+				//case 2 copy_paste :/, idk maybe lambda=func would solve this problem but 
+				//1)i dont care 
+				//2)didn't read 
+				//3)idgaf 
+				//4)i have copy->paste binds
+				Token latestToken = currentRule[currentRule.size() - 1];
+				Token penultToken = currentRule[currentRule.size() - 2];
+				if (newGrammar.mNonTerminals.contains(penultToken)) // rules AB or Ab
+				{
+					if (newGrammar.mNonTerminals.contains(latestToken))
+						newRules[currentLHS].push_back(vector<Token>(currentRule.begin()+i,currentRule.end()));
+					else {
+						vector<Token> tempRule = {penultToken};
+						Token newNonTerminal(latestToken.mLexem + "\'", latestToken.mLexemType);//b'
+						newGrammar.mNonTerminals.insert(newNonTerminal);
+						tempRule.push_back(newNonTerminal); //b'
+						vector<Token> terminalRule; terminalRule.push_back(latestToken); //->b
+						newRules[newNonTerminal].push_back(terminalRule);//b'->b
+						newRules[currentLHS].push_back(tempRule);//<Ab>->Ab'
+					}
+				}
+				else { //rules aB or aa
+					if (newGrammar.mNonTerminals.contains(latestToken)) {
+						vector<Token> tempRule;
+						Token newNonTerminal(penultToken.mLexem + "\'", latestToken.mLexemType);//a'
+						newGrammar.mNonTerminals.insert(newNonTerminal);
+						tempRule.push_back(newNonTerminal);//->a'
+						tempRule.push_back(latestToken);//->a'B
+						vector<Token> terminalRule; terminalRule.push_back(penultToken); //->a
+						newRules[newNonTerminal].push_back(terminalRule);//a'->a
+						newRules[currentLHS].push_back(tempRule);//<aB>->a'B
+					}
+					else {
+						vector<Token> tempRule; vector<Token> firstRule; vector<Token> secondRule;
+						Token firstNT = Token(penultToken.mLexem + "\'", penultToken.mLexemType);//a'
+						firstRule.push_back(penultToken);//->a
+						Token secondNT = Token(latestToken.mLexem + "\'", latestToken.mLexemType);//b'
+						secondRule.push_back(latestToken);//->b
+						tempRule.push_back(firstNT); tempRule.push_back(secondNT);//->a'b'
+						newRules[currentLHS].push_back(tempRule);//<ab>->a'b'
+						newRules[firstNT].push_back(firstRule);//a'->a
+						newRules[secondNT].push_back(secondRule);//b'->b
+						newGrammar.mNonTerminals.insert(firstNT);
+						newGrammar.mNonTerminals.insert(secondNT);
+					}
+				}
+				break;
+			}
+		}
+
+	return CFG(newGrammar.mNonTerminals,newGrammar.mTerminals,newRules,newGrammar.mAxiom); // TODO: MAYBE remove chain rules
 }
 
 set<Token> CFG::getGoodNonTerminals()

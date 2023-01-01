@@ -93,6 +93,7 @@ namespace UnitTest
 			Assert::IsFalse(notEmptyCFGTerminalChainWithExtraRoutes.isLanguageEmpty());
 			Assert::IsFalse(emptyCFGTerminalChainAchieved.isLanguageEmpty());
 		}
+
 		TEST_METHOD(removeUnreachableSymbols) {
 
 			CFG testcase1(
@@ -193,6 +194,7 @@ namespace UnitTest
 			attemp = testcase5.removeUnreachableSymbols();
 			Assert::AreEqual(testcase5answer, attemp);
 		}
+
 		TEST_METHOD(removeBadNonTerminalsAndRules) {
 			CFG testCase1(
 				{ "S", "A", "B", "C", "D", "E", "F", "G" },
@@ -223,6 +225,7 @@ namespace UnitTest
 			CFG attemp = testCase1.removeBadNonTerminalsAndRules();
 			Assert::AreEqual(attemp, testCase1Answer);
 		}
+
 		TEST_METHOD(removeUselessSymbols) {
 			CFG noUselessSymbols(
 				{ "S" },
@@ -258,6 +261,7 @@ namespace UnitTest
 			Assert::AreEqual(attemp, test_case2_answer);
 
 		}
+
 		TEST_METHOD(removeLambdaRules) {
 
 			CFG   testcase1(
@@ -386,6 +390,7 @@ namespace UnitTest
 			attemp = testcase5.removeLambdaRules();
 			Assert::AreEqual(attemp, testcase5Answer);
 		}	
+
 		TEST_METHOD(removeLeftRecursion) {
 			CFG originalGrammar(
 				{ "A", "B" },
