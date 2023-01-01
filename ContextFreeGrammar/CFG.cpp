@@ -410,6 +410,16 @@ void CFG::recursivePushBack(ruleRHS& result,vector<Token> tempChain,vector<Token
 		result.push_back(tempChain);
 }
 
+void CFG::removeDublicateRules(ruleDict& rules)
+{
+	for (auto& rulePair : rules) {
+		sort(rules[rulePair.first].begin(), rules[rulePair.first].end());
+		rules[rulePair.first].erase(
+			unique(rules[rulePair.first].begin(), rules[rulePair.first].end()),
+				rules[rulePair.first].end());
+	}
+}
+
 CFG CFG::removeLambdaRules()
 { 
 	set<Token> lambdaNonTerminals = getLambdaNonTerminals();
@@ -704,7 +714,7 @@ CFG CFG::makeChomskyNormalForm()
 				break;
 			}
 		}
-
+		removeDublicateRules(newRules);
 	return CFG(newGrammar.mNonTerminals,newGrammar.mTerminals,newRules,newGrammar.mAxiom); // TODO: MAYBE remove chain rules
 }
 
