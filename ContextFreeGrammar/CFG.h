@@ -35,6 +35,10 @@ public:
 		const ruleDict& rules,
 		const Token& axiom);
 	CFG(const CFG& other);
+	CFG(const set<string>& nonTerminals,
+		const set<string>& terminals,
+		const map<string, vector<vector<string>>>& rules,
+		const Token& Axiom);
 	CFG();
 	CFG& operator=(const CFG& other) noexcept;
 	CFG& operator=(CFG&& other) noexcept;
@@ -47,6 +51,7 @@ public:
 	CFG removeBadNonTerminalsAndRules();
 	CFG removeLambdaRules();
 	CFG removeLeftRecursion();
+	CFG makeChomskyNormalForm();
 	wstring toWString() const;
 private:
 	bool isRuleContainOnlyGoodTokens(const vector<Token>& rhs, const set<Token>& goodTokens) noexcept;

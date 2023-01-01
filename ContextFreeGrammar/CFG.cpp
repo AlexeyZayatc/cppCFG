@@ -88,6 +88,66 @@ CFG::CFG(const set<string>& nonTerminals,
 	}
 	mAxiom = Token(axiom, "char");
 }
+CFG::CFG(const set<string>& nonTerminals,
+	const set<string>& terminals,
+	const map<string, vector<vector<string>>>& rules,
+	const Token& axiom){
+	//checks for input
+	try {
+		if (axiom.mLexem.empty()) {
+			throw Exception("Lambda can't be an axiom\n");
+		}
+		if (!nonTerminals.contains(axiom.mLexem))
+			throw Exception("Non-terminals set doesn't have axiom\n");
+		for (auto& nt : nonTerminals)
+			for (auto& t : terminals)
+				if (nt == t)
+					throw Exception("Terminal and Non-terminal sets intersect\n");
+		map<string, vector<vector<string>>> rulesCopy = rules;
+		std::string cursubStr;
+		for (auto& rulePair : rulesCopy) {
+			if (!nonTerminals.contains(rulePair.first))
+				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
+			for (auto& curRule : rulesCopy[rulePair.first])
+				for (unsigned i = 0; i < curRule.size(); i++)
+				{
+					if (!nonTerminals.contains(curRule[i]))
+						if (!terminals.contains(curRule[i]) && !curRule[i].empty())
+							throw Exception("Symbol is not in non-terminals or terminals set\n");
+				}
+		}
+	}
+	catch (Exception e) {
+		cerr << e.what();
+		mAxiom = Token("S", "char");
+		mNonTerminals.insert(mAxiom);
+		ruleRHS rRHS;
+		vector<Token> temp; temp.push_back(Token("", "char"));
+		rRHS.push_back(temp);
+		mRules[mAxiom] = rRHS;
+		return;
+	}
+	auto convert = [&](set<string> setOfStrings, set<Token>& setOfTokens) {
+		for (auto&& elem : setOfStrings)
+			setOfTokens.insert(move(Token(elem, "char")));
+	};
+	convert(nonTerminals, mNonTerminals);
+	convert(terminals, mTerminals);
+	for (auto&& rule : rules) {
+		auto currentToken = Token(rule.first, "char");
+		auto& vectors = rule.second;
+		vector<Token> temp;
+		for (auto&& vec : vectors) {
+			temp.clear();
+			if (vec.empty()) temp.push_back(Token("", "char"));
+			for (unsigned i = 0; i < vec.size(); i++) {
+				temp.push_back(Token(vec[i], "char"));
+			}
+			mRules[currentToken].push_back(temp);
+		}
+	}
+	mAxiom = axiom;
+}
 CFG::CFG(const set<Token>& nonTerminals,
 	const set<Token>& terminals,
 	const ruleDict& rules,
@@ -147,6 +207,7 @@ CFG& CFG::operator=(const CFG& other) noexcept
 	mAxiom = other.mAxiom;
 	return *this;
 }
+
 CFG& CFG::operator=(CFG&& other) noexcept {
 	mNonTerminals = move(other.mNonTerminals);
 	mTerminals = move(other.mTerminals);
@@ -410,7 +471,7 @@ CFG CFG::removeLeftRecursion()
 {
 	if (isLanguageEmpty())
 		return emptyLanguage();
-	CFG newGrammar = removeLambdaRules().removeUselessSymbols();
+	CFG newGrammar = removeLambdaRules().removeUselessSymbols();//TODO: removeChainRules;
 	vector<Token> orderedTokens;
 	for (auto& nonTerminal : mNonTerminals)
 		orderedTokens.push_back(nonTerminal);
@@ -464,7 +525,27 @@ CFG CFG::removeLeftRecursion()
 			newGrammar.mRules[orderedTokens[i]] = tempRules;
 		} while (j != i - 1);
 	} while (true);
-	return newGrammar.removeUselessSymbols();
+	return newGrammar.removeUselessSymbols();//TODO: remove chain rules too!
+}
+
+CFG CFG::makeChomskyNormalForm()
+{
+	//1) добавить правила A->a, a is in T
+	//2) добавить правила A->BC, BC are in NT
+	//3) добавить правила S->lambda
+	//4) для правил A->X1X2X3...Xn   //n>2
+	//      производим замену A->X1'<X2...Xn>
+	//                   then <X2...Xn> -> X2'<X3...Xn>
+	//                         <X_k-1X_k> -> X'_k-1X'_k
+	//X' = X, if X is NT
+	//else X'=X', and add rule X'->X
+	//5) обработать правила n=2
+	//   A->aB-> a'B, A->Ba ->Ba', A->ab ->a'b'
+	//6) для новых нетерминалов a'(a is in T) add rule a'->a
+	ruleDict newRules;
+	ruleRHS ruleVector;
+
+	return CFG();
 }
 
 set<Token> CFG::getGoodNonTerminals()
@@ -536,7 +617,7 @@ wstring CFG::toWString() const
 	printSet(mTerminals);
 	result+=L"Rules:\n";
 	for (auto&& rulePair : mRules) {
-		cout << rulePair.first.mLexem << " : ";
+		result+=wstring(rulePair.first.mLexem.begin(),rulePair.first.mLexem.end()) + L" : ";
 		for (auto&& rhs : rulePair.second) {
 			for (unsigned i = 0; i < rhs.size(); i++)
 				result+= wstring(rhs[i].mLexem.begin(),rhs[i].mLexem.end());

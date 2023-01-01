@@ -385,6 +385,151 @@ namespace UnitTest
 			);
 			attemp = testcase5.removeLambdaRules();
 			Assert::AreEqual(attemp, testcase5Answer);
+		}	
+		TEST_METHOD(removeLeftRecursion) {
+			CFG originalGrammar(
+				{ "A", "B" },
+				{ "a", "b", "c", "d" },
+			{
+				{"A", {"aBb", "cd"} },
+				{"B", { "c", "d" }
+		}
+			},
+			"A"
+				);
+			CFG perferctGrammar = originalGrammar.removeLeftRecursion();
+
+
+			Assert::AreEqual(perferctGrammar, originalGrammar);
+
+			CFG testcase2(
+				{ "S", "A", "B" },
+				{ "c", "d" },
+			{
+				{"A", {"AB", "Acd"}} ,
+				{"B" , {"c", "d"}}
+			},
+				"S"
+			);
+
+			CFG testcase2Answer(
+				{ "S" },
+				{ },
+			{
+				{"S", {""} }
+			},
+				"S"
+			);
+			Assert::AreEqual(testcase2.removeLeftRecursion(), testcase2Answer);
+
+			CFG testcase3(
+				{  "B","A" },
+				{ "c", "d" },
+			{
+				{"A", {"Bc", "Acd"}} ,
+				{"B" , {"c", "d"}}
+			},
+				"A"
+			);
+
+			ruleDict testcaseRules;
+			ruleRHS testcaseRuleRHS;
+			set<Token> NT;
+			Token A("A", "char");
+			Token As("A\'", "char");
+			Token B("B", "char");
+			NT.insert(B); NT.insert(A); NT.insert(As);
+			Token c("c", "char");
+			Token d("d", "char");
+			set<Token> T; T.insert(c); T.insert(d);
+			vector<Token> chain;
+
+			chain.push_back(B); chain.push_back(c); testcaseRuleRHS.push_back(chain);
+			chain.push_back(As); testcaseRuleRHS.push_back(chain);
+			testcaseRules[A] = testcaseRuleRHS;
+			testcaseRuleRHS.clear(); chain.clear();
+			chain.push_back(c); testcaseRuleRHS.push_back(chain);  
+			chain.clear();
+			chain.push_back(d); testcaseRuleRHS.push_back(chain);
+			testcaseRules[B] = testcaseRuleRHS;
+			testcaseRuleRHS.clear(); chain.clear();
+			chain.push_back(c); chain.push_back(d); testcaseRuleRHS.push_back(chain);
+			chain.push_back(As); testcaseRuleRHS.push_back(chain);
+			testcaseRules[As] = testcaseRuleRHS;
+			CFG testcase3Answer(NT,T,testcaseRules,A);
+			Assert::AreEqual(testcase3Answer, testcase3.removeLeftRecursion());
+
+			CFG testcase4(
+				{ "A", "B" },
+				{ "c", "d" },
+			{
+				{"A", {"Bc"}} ,
+				{"B" , {"Bc", "Bd"}}
+			},
+				"A"
+			);
+			CFG testcase4Answer(
+				{ "S" },
+				{ },
+			{
+				{"S", {""}}
+			},
+				"S"
+			);
+			Assert::AreEqual(testcase4.removeLeftRecursion(), testcase4Answer);
+
+
+			CFG testcase5(
+				{  "B","A" },
+				{ "c", "d" },
+			{
+				{"B" , {"Ac", "Ad"}},
+				{"A", {"Bc", "dc"}}
+			},
+				"A"
+			);
+			Token Bs("B\'", "char");
+			NT.erase(As); NT.insert(Bs);
+			chain.clear(); testcaseRuleRHS.clear(); testcaseRules.clear();
+			chain.push_back(B); chain.push_back(c); testcaseRuleRHS.push_back(chain); chain.clear();
+			chain.push_back(d); chain.push_back(c); testcaseRuleRHS.push_back(chain);
+			testcaseRules[A] = testcaseRuleRHS;
+			chain.clear(); testcaseRuleRHS.clear();
+			chain.push_back(d); chain.push_back(c); chain.push_back(c); testcaseRuleRHS.push_back(chain);
+			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
+			chain.pop_back(); chain.pop_back(); chain.push_back(d); testcaseRuleRHS.push_back(chain);
+			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
+			testcaseRules[B] = testcaseRuleRHS;
+			testcaseRuleRHS.clear(); chain.clear();
+			chain.push_back(c); chain.push_back(c); testcaseRuleRHS.push_back(chain);
+			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
+			chain.clear(); chain.push_back(c); chain.push_back(d); testcaseRuleRHS.push_back(chain);
+			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
+			testcaseRules[Bs] = testcaseRuleRHS;
+			CFG testcase5Answer(NT,T,testcaseRules,A);
+
+			Assert::AreEqual(testcase5Answer, testcase5.removeLeftRecursion());
+
+			CFG testcase6(
+				{ "A", "B" },
+				{ "c", "d" },
+			{
+				{"A", {"Ac", "dc"}} ,
+				{"B" , {"Ad"}}
+			},
+				"A"
+			);
+			NT.erase(Bs); NT.erase(B); NT.insert(As);
+			testcaseRules.clear(); testcaseRuleRHS.clear(); chain.clear();
+			chain.push_back(d); chain.push_back(c); testcaseRuleRHS.push_back(chain);
+			chain.push_back(As); testcaseRuleRHS.push_back(chain);
+			testcaseRules[A] = testcaseRuleRHS;
+			chain.clear(); testcaseRuleRHS.clear();
+			chain.push_back(c); testcaseRuleRHS.push_back(chain);
+			chain.push_back(As); testcaseRuleRHS.push_back(chain);
+			testcaseRules[As] = testcaseRuleRHS;
+			CFG testcase6Answer(NT, T, testcaseRules, A);
+			Assert::AreEqual( testcase6Answer, testcase6.removeLeftRecursion());
 		}
 	};
 }
