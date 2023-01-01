@@ -766,7 +766,7 @@ set<Token> CFG::getTerminalNTForLambda(set<Token> lambdaNT)
 		}
 	} while (res != resultEnd);
 
-	return set<Token>(ans);
+	return move(ans);
 }
 
 CFG CFG::removeUselessSymbols()
