@@ -92,6 +92,7 @@ CFG::CFG(const set<string>& nonTerminals,
 			mRules[currentToken].push_back(temp);
 		}
 	}
+	removeDublicateRules(mRules);
 	mAxiom = Token(axiom, "char");
 }
 CFG::CFG(const set<string>& nonTerminals,
@@ -157,6 +158,7 @@ CFG::CFG(const set<string>& nonTerminals,
 			mRules[currentToken].push_back(temp);
 		}
 	}
+	removeDublicateRules(mRules);
 	mAxiom = axiom;
 }
 CFG::CFG(const set<Token>& nonTerminals,
@@ -219,6 +221,7 @@ CFG::CFG(const set<Token>& nonTerminals,
 			mRules[currentToken].push_back(temp);
 		}
 	}
+	removeDublicateRules(mRules);
 }
 CFG::CFG(const CFG & other)
 	: mNonTerminals(other.mNonTerminals), mTerminals(other.mTerminals),
