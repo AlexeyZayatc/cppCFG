@@ -73,7 +73,7 @@ CFG::CFG(const set<string>& nonTerminals,
 		mRules[mAxiom] = rRHS;
 		return;
 	}
-	auto convert = [&](set<string> setOfStrings, set<Token>& setOfTokens) {
+	auto convert = [&](const set<string>& setOfStrings, set<Token>& setOfTokens) {
 		for (auto&& elem : setOfStrings)
 			setOfTokens.insert(move(Token(elem, "char")));
 	};
@@ -139,7 +139,7 @@ CFG::CFG(const set<string>& nonTerminals,
 		mRules[mAxiom] = rRHS;
 		return;
 	}
-	auto convert = [&](set<string> setOfStrings, set<Token>& setOfTokens) {
+	auto convert = [&](const set<string>& setOfStrings, set<Token>& setOfTokens) {
 		for (auto&& elem : setOfStrings)
 			setOfTokens.insert(move(Token(elem, "char")));
 	};
@@ -249,10 +249,10 @@ CFG& CFG::operator=(CFG&& other) noexcept {
 	return *this;
 }
 
-void CFG::printCFG()
+void CFG::printCFG() const noexcept
 {
 	cout << string(18,'-') << "\n";
-	auto printSet = [&](set<Token> setOfTokens) {
+	auto printSet = [&](const set<Token>& setOfTokens) {
 		for (auto&& setElem : setOfTokens)
 			cout << setElem.mLexem << " ";
 		cout << "\n";
@@ -301,12 +301,12 @@ bool CFG::operator==(const CFG& other) const noexcept{
 	return false;
 }
 
-bool CFG::isLanguageEmpty()
+bool CFG::isLanguageEmpty() const 
 {
 	return !getGoodNonTerminals().contains(mAxiom);
 }
 
-CFG CFG::emptyLanguage()
+CFG CFG::emptyLanguage() const 
 {
 	Token axiom("S", "char");
 	set<Token> nT; nT.insert(axiom);
@@ -315,7 +315,7 @@ CFG CFG::emptyLanguage()
 	return CFG(nT, set<Token>(), rls, axiom);
 }
 
-CFG CFG::removeUnreachableSymbols()
+CFG CFG::removeUnreachableSymbols() const
 {
 	set<Token> reachableNonTerminals; reachableNonTerminals.insert(mAxiom);
 	set<Token> reachableNonTerminalsTemp = reachableNonTerminals;
@@ -336,13 +336,13 @@ CFG CFG::removeUnreachableSymbols()
 	ruleDict newRules;
 	for (auto& rulePair : mRules)
 		if (reachableNonTerminals.contains(rulePair.first)) 
-			newRules[rulePair.first] = mRules[rulePair.first];
+			newRules[rulePair.first] = mRules.at(rulePair.first);
 	return CFG(reachableNonTerminals, reachableTerminals, newRules, mAxiom);
 }
 
 bool CFG::isRuleContainOnlyGoodTokens(
 	const vector<Token>&rhs, 
-	const set<Token>& goodTokens) noexcept
+	const set<Token>& goodTokens) const 
 {
 	if (rhs.empty()) return false;
 	for (auto& token : rhs)
@@ -351,20 +351,20 @@ bool CFG::isRuleContainOnlyGoodTokens(
 	return true;
 }
 
-set<Token> CFG::getLambdaNonTerminals()
+set<Token> CFG::getLambdaNonTerminals() const  
 {
 	set<Token> lambdaNonTerminals = set<Token>();
 	set<Token> lambdaNonTerminalsTemp = set<Token>();
-	auto onlyLambadaNT = [&](vector<Token> rhs) {
-		for (auto& token : rhs)
+	auto onlyLambadaNT = [&](const vector<Token>& rhs) {
+		for (const auto& token : rhs)
 			if (!lambdaNonTerminals.contains(token))
 				return false;
 		return true;
 	};
 	do {
 		lambdaNonTerminalsTemp = lambdaNonTerminals;
-		for (auto& rulePair : mRules) {
-			for (auto& rhs : mRules[rulePair.first]) {
+		for ( const auto& rulePair : mRules) {
+			for (const auto& rhs : mRules.at(rulePair.first)) {
 				if (onlyLambadaNT(rhs))
 					lambdaNonTerminals.insert(rulePair.first);
 				else if (rhs[0].mLexem.empty())
@@ -375,7 +375,7 @@ set<Token> CFG::getLambdaNonTerminals()
 	return lambdaNonTerminals;
 }
 
-CFG CFG::removeBadNonTerminalsAndRules()
+CFG CFG::removeBadNonTerminalsAndRules() const
 {
 	if (isLanguageEmpty())
 		return emptyLanguage();
@@ -397,10 +397,10 @@ CFG CFG::removeBadNonTerminalsAndRules()
 
 void CFG::recursivePushBack(ruleRHS& result,
 	vector<Token> tempChain,
-	vector<Token> chain,
-	unsigned adjPoint,
-	set<Token>& lambdaNT,
-	set<Token>& terminalNT)
+	const vector<Token>& chain,
+	const unsigned& adjPoint,
+	const set<Token>& lambdaNT,
+	const set<Token>& terminalNT) const 
 {
 	for (unsigned j = adjPoint + 1; j < chain.size(); ++j) {
 		if(!getLambdaNonTerminals().contains(chain[j]))
@@ -414,11 +414,11 @@ void CFG::recursivePushBack(ruleRHS& result,
 			break;
 		}
 	}
-	if (!tempChain.empty() && find(result.begin(), result.end(), tempChain) == result.end())
-		result.push_back(tempChain);
+	if (!tempChain.empty())
+		result.push_back(move(tempChain));
 }
 
-void CFG::removeDublicateRules(ruleDict& rules)
+void CFG::removeDublicateRules(ruleDict& rules) 
 {
 	for (auto& rulePair : rules) {
 		sort(rules[rulePair.first].begin(), rules[rulePair.first].end());
@@ -428,31 +428,31 @@ void CFG::removeDublicateRules(ruleDict& rules)
 	}
 }
 
-CFG CFG::removeLambdaRules()
+CFG CFG::removeLambdaRules() const 
 { 
 	set<Token> lambdaNonTerminals = getLambdaNonTerminals();
 	set<Token> nonTerminalsTerminalChain = getTerminalNTForLambda(lambdaNonTerminals);
 	ruleDict  rulesWithLambdaNonTerminals;
 	ruleDict rulesWLNTBuffer;
-	auto onlyLambdaCheck = [&](vector<Token> curChain) {
-		for (auto& token : curChain) 
+	auto onlyLambdaCheck = [&](const vector<Token>& curChain) {
+		for (const auto& token : curChain) 
 			if (lambdaNonTerminals.contains(token))
 				if (nonTerminalsTerminalChain.contains(token))
 					return false;		
 		return true;
 	};
-	auto doesHaveLambda = [&](vector<Token> curChain) {
+	auto doesHaveLambda = [&](const vector<Token>& curChain) {
 		if (curChain[0].mLexem.empty())
 			return true;
-		for (auto& token : curChain)
+		for (const auto& token : curChain)
 			if (lambdaNonTerminals.contains(token))
 				return true;
 		return false;
 	};
-	for (auto& rulePair : mRules) {
-		for (auto& rhs : mRules[rulePair.first]) {
+	for (const auto& rulePair : mRules) {
+		for (const auto& rhs : mRules.at(rulePair.first)) {
 
-			for (auto& token : rhs) {
+			for (const auto& token : rhs) {
 				if (lambdaNonTerminals.contains(token)) {
 					rulesWithLambdaNonTerminals[rulePair.first].emplace_back(rhs);
 					break;
@@ -462,9 +462,9 @@ CFG CFG::removeLambdaRules()
 	}
 	vector<Token> temp;
 	rulesWLNTBuffer = rulesWithLambdaNonTerminals;
-	for (auto& rulePair : rulesWLNTBuffer) {
+	for (const auto& rulePair : rulesWLNTBuffer) {
 		ruleRHS result;
-		for (auto& curChain : rulesWithLambdaNonTerminals[rulePair.first]) {
+		for (const auto& curChain : rulesWithLambdaNonTerminals[rulePair.first]) {
 			temp.clear();
 			if (!onlyLambdaCheck(curChain)) {
 				unsigned i = 0;
@@ -488,15 +488,15 @@ CFG CFG::removeLambdaRules()
 		if (!result.empty()) rulesWithLambdaNonTerminals[rulePair.first] = result;
 		else rulesWithLambdaNonTerminals.erase(rulePair.first);
 	}
-	for (auto& rulePair : mRules) {
-		for (auto& rhs : mRules[rulePair.first]) {
+	for (const auto& rulePair : mRules) {
+		for (const auto& rhs : mRules.at(rulePair.first)) {
 			if (!doesHaveLambda(rhs)) {
 				rulesWithLambdaNonTerminals[rulePair.first].emplace_back(rhs);
 			}
 		}
 	}
 	set<Token> finalNonTerminals;
-	for (auto& pairRule : rulesWithLambdaNonTerminals)
+	for (const auto& pairRule : rulesWithLambdaNonTerminals)
 		finalNonTerminals.insert(pairRule.first);
 
 	if (lambdaNonTerminals.contains(mAxiom)) {
@@ -515,7 +515,7 @@ CFG CFG::removeLambdaRules()
 	return CFG(move(finalNonTerminals),mTerminals,move(rulesWithLambdaNonTerminals),mAxiom);
 }
 
-CFG CFG::removeLeftRecursion()
+CFG CFG::removeLeftRecursion() const 
 {
 	if (isLanguageEmpty())
 		return emptyLanguage();
@@ -576,7 +576,7 @@ CFG CFG::removeLeftRecursion()
 	return newGrammar.removeUselessSymbols();//TODO: remove chain rules too!
 }
 
-CFG CFG::makeChomskyNormalForm()
+CFG CFG::makeChomskyNormalForm() const
 {
 	//1) добавить правила A->a, a is in T
 	//2) добавить правила A->BC, BC are in NT
@@ -594,8 +594,8 @@ CFG CFG::makeChomskyNormalForm()
 	ruleDict newRules;
 	pair<size_t, size_t> combination= {0, 1};
 	set<pair<Token,vector<Token>>> newNonTerminals;
-	auto makeNewRulesofSize2 = [&](pair<size_t, size_t>& comb,
-		vector<Token>& currentRule,
+	auto makeNewRulesofSize2 = [&](const pair<size_t, size_t>& comb,
+		const vector<Token>& currentRule,
 		const Token& ruleLHS) {
 		// comb = {0,1} -> first=nonTerminal, second-terminal;
 		vector<Token> tempRule;
@@ -608,8 +608,8 @@ CFG CFG::makeChomskyNormalForm()
 		newGrammar.mNonTerminals.insert(newNonTerminal);
 		newNonTerminals.insert(make_pair<Token, vector<Token>>(move(newNonTerminal), move(terminalRule)));
 	};
-	auto makeNewRulesOfTwoTerminals = [&](pair<size_t, size_t>& comb,
-		vector<Token>& currentRule,
+	auto makeNewRulesOfTwoTerminals = [&](const pair<size_t, size_t>& comb,
+		const vector<Token>& currentRule,
 		const Token& ruleLHS) {
 			vector<Token> tempRule; vector<Token> firstRule; vector<Token> secondRule;
 			Token firstNT = Token(currentRule[comb.first].mLexem + "\'", currentRule[comb.first].mLexemType); firstRule.push_back(currentRule[0]);
@@ -712,14 +712,14 @@ CFG CFG::makeChomskyNormalForm()
 	return CFG(move(newGrammar.mNonTerminals),move(newGrammar.mTerminals),move(newRules),move(newGrammar.mAxiom)); // TODO: MAYBE remove chain rules
 }
 
-set<Token> CFG::getGoodNonTerminals()
+set<Token> CFG::getGoodNonTerminals() const 
 {
 	set<Token> goodTokens=set<Token>();
 	set<Token> goodTokensTemp=set<Token>();
 	do {
 		goodTokensTemp = goodTokens;
-		for (auto& rulePair : mRules) {
-			for (auto& rhs : mRules[rulePair.first]) {
+		for (const auto& rulePair : mRules) {
+			for (const auto& rhs : mRules.at(rulePair.first)) {
 				if (isRuleContainOnlyGoodTokens(rhs, goodTokens)) {
 					goodTokens.insert(rulePair.first);
 					break;
@@ -730,21 +730,21 @@ set<Token> CFG::getGoodNonTerminals()
 	return goodTokens;
 }
 
-set<Token> CFG::getTerminalNTForLambda(set<Token> lambdaNT)
+set<Token> CFG::getTerminalNTForLambda(const set<Token>& lambdaNT) const 
 {
-	set<Token> res = set<Token>();
+	set<Token> res = lambdaNT;
 	set<Token> resultEnd;
 	set<Token> ans;
-	res.merge(lambdaNT);
-	res.merge(getGoodNonTerminals());
+	set<Token> goodNonTerminals=getGoodNonTerminals();
+	//res.emplace(goodNonTerminals);
 	do {
 		resultEnd = res;
-		for (auto& rulePair : mRules) {
-			for (auto& rhs : mRules[rulePair.first]) {
+		for (const auto& rulePair : mRules) {
+			for (const auto& rhs : mRules.at(rulePair.first)) {
 				if (isRuleContainOnlyGoodTokens(rhs, res)) {
 					int terminalsCount = 0;
-					for (auto& token : rhs) {
-						if (mTerminals.contains(token) || getGoodNonTerminals().contains(token))
+					for (const auto& token : rhs) {
+						if (mTerminals.contains(token) || goodNonTerminals.contains(token))
 							terminalsCount++;
 					}
 					if (terminalsCount != 0) {
@@ -760,7 +760,7 @@ set<Token> CFG::getTerminalNTForLambda(set<Token> lambdaNT)
 	return ans;
 }
 
-CFG CFG::removeUselessSymbols()
+CFG CFG::removeUselessSymbols() const
 {
 	if (isLanguageEmpty())
 		return emptyLanguage();
@@ -770,7 +770,7 @@ CFG CFG::removeUselessSymbols()
 wstring CFG::toWString() const
 {
 	std::wstring result;
-	auto printSet = [&](set<Token> setOfTokens) {
+	auto printSet = [&](const set<Token>& setOfTokens) {
 		for (auto&& setElem : setOfTokens)
 			result = result + wstring(setElem.mLexem.begin(), setElem.mLexem.end()) + L" ";
 		result += L"\n";

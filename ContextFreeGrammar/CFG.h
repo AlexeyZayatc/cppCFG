@@ -41,26 +41,29 @@ public:
 	CFG();
 	CFG& operator=(const CFG& other) noexcept;
 	CFG& operator=(CFG&& other) noexcept;
-	void printCFG();
+	void printCFG() const noexcept;
 	bool operator==(const CFG& other) const noexcept;
-	bool isLanguageEmpty();
-	CFG emptyLanguage();
-	CFG removeUnreachableSymbols();
-	CFG removeUselessSymbols();
-	CFG removeBadNonTerminalsAndRules();
-	CFG removeLambdaRules();
-	CFG removeLeftRecursion();
-	CFG makeChomskyNormalForm();
+	bool isLanguageEmpty() const ;
+	CFG emptyLanguage() const ;
+	CFG removeUnreachableSymbols() const;
+	CFG removeUselessSymbols() const;
+	CFG removeBadNonTerminalsAndRules() const;
+	CFG removeLambdaRules() const ;
+	CFG removeLeftRecursion() const ;
+	CFG makeChomskyNormalForm() const;
 	wstring toWString() const;
 private:
-	bool isRuleContainOnlyGoodTokens(const vector<Token>& rhs, const set<Token>& goodTokens) noexcept;
-	void recursivePushBack(ruleRHS& result, vector<Token> tempChain, vector<Token> chain, unsigned adjPoint,
-		set<Token>& lambdaNT,
-		set<Token>& terminalNT);
-	void removeDublicateRules(ruleDict& rules);
-	set<Token> getLambdaNonTerminals();
-	set<Token> getGoodNonTerminals();
-	set<Token> getTerminalNTForLambda(set<Token> lambdaNT);
+	bool isRuleContainOnlyGoodTokens(const vector<Token>& rhs, const set<Token>& goodTokens)const ;
+	void recursivePushBack(ruleRHS& result,
+		vector<Token> tempChain,
+		const vector<Token>& chain,
+		const unsigned& adjPoint,
+		const set<Token>& lambdaNT,
+		const set<Token>& terminalNT) const ;
+	void removeDublicateRules(ruleDict& rules) ;
+	set<Token> getLambdaNonTerminals() const ;
+	set<Token> getGoodNonTerminals() const ;
+	set<Token> getTerminalNTForLambda(const set<Token>& lambdaNT) const ;
 	set<Token> mNonTerminals;
 	set<Token> mTerminals;
 	ruleDict mRules;
