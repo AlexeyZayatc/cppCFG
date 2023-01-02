@@ -587,12 +587,35 @@ CFG CFG::makeChomskyNormalForm()
 	//6) для новых нетерминалов a'(a is in T) add rule a'->a
 	CFG newGrammar = removeLambdaRules();
 	ruleDict newRules;
-	//for (auto& axiomRule : mRules[mAxiom])
-	//	if (axiomRule[0] == Token("", "char") && axiomRule.size() == 1){
-	//		newRules[mAxiom].push_back(axiomRule);
-	//		break;
-	//	}
-
+	pair<size_t, size_t> combination= {0, 1};
+	set<pair<Token,vector<Token>>> newNonTerminals;
+	auto makeNewRulesofSize2 = [&](pair<size_t, size_t>& comb,
+		vector<Token>& currentRule,
+		const Token& ruleLHS) {
+		// comb = {0,1} -> first=nonTerminal, second-terminal;
+		vector<Token> tempRule;
+		Token newNonTerminal(currentRule[comb.second].mLexem + "\'", currentRule[comb.second].mLexemType);
+		tempRule.push_back(currentRule[comb.first]);
+		tempRule.push_back(newNonTerminal);
+		if (comb.first > comb.second) reverse(tempRule.begin(), tempRule.end());
+		vector<Token> terminalRule; terminalRule.push_back(currentRule[comb.second]);
+		newRules[ruleLHS].push_back(tempRule);
+		newGrammar.mNonTerminals.insert(newNonTerminal);
+		newNonTerminals.insert(make_pair<Token, vector<Token>>(move(newNonTerminal), move(terminalRule)));
+	};
+	auto makeNewRulesOfTwoTerminals = [&](pair<size_t, size_t>& comb,
+		vector<Token>& currentRule,
+		const Token& ruleLHS) {
+			vector<Token> tempRule; vector<Token> firstRule; vector<Token> secondRule;
+			Token firstNT = Token(currentRule[comb.first].mLexem + "\'", currentRule[comb.first].mLexemType); firstRule.push_back(currentRule[0]);
+			Token secondNT = Token(currentRule[comb.second].mLexem + "\'", currentRule[comb.second].mLexemType); secondRule.push_back(currentRule[1]);
+			tempRule.push_back(firstNT); tempRule.push_back(secondNT);
+			newRules[ruleLHS].push_back(tempRule);
+			newGrammar.mNonTerminals.insert(firstNT);
+			newGrammar.mNonTerminals.insert(secondNT);
+			newNonTerminals.insert(make_pair<Token, vector<Token>>(move(firstNT), move(firstRule)));
+			newNonTerminals.insert(make_pair<Token, vector<Token>>(move(secondNT), move(secondRule)));
+	};
 	for (auto& rulePair : newGrammar.mRules)
 		for (auto& currentRule : newGrammar.mRules[rulePair.first]) {
 			switch (currentRule.size()) {
@@ -602,40 +625,22 @@ CFG CFG::makeChomskyNormalForm()
 			case 2:
 				if (newGrammar.mNonTerminals.contains(currentRule[0])) // rules AB or Ab
 				{
-					if(newGrammar.mNonTerminals.contains(currentRule[1]))
+					if (newGrammar.mNonTerminals.contains(currentRule[1])) {
 						newRules[rulePair.first].push_back(currentRule);
+					}
 					else {
-						vector<Token> tempRule = currentRule;
-						tempRule.pop_back();
-						Token newNonTerminal(currentRule[1].mLexem+"\'", currentRule[1].mLexemType);
-						tempRule.push_back(newNonTerminal);
-						vector<Token> terminalRule; terminalRule.push_back(currentRule[1]);
-						newRules[newNonTerminal].push_back(terminalRule);
-						newRules[rulePair.first].push_back(tempRule);
-						newGrammar.mNonTerminals.insert(newNonTerminal);
+						combination = { 0,1 };
+						makeNewRulesofSize2(combination, currentRule, rulePair.first);
 					}
 				}
 				else { //rules aB or aa
 					if (newGrammar.mNonTerminals.contains(currentRule[1])) {
-						vector<Token> tempRule;
-						Token newNonTerminal(currentRule[0].mLexem + "\'", currentRule[1].mLexemType);
-						tempRule.push_back(newNonTerminal);
-						tempRule.push_back(currentRule[1]);
-						vector<Token> terminalRule; terminalRule.push_back(currentRule[0]);
-						newRules[newNonTerminal].push_back(terminalRule);
-						newRules[rulePair.first].push_back(tempRule);
-						newGrammar.mNonTerminals.insert(newNonTerminal);
+						combination={ 1,0 };
+						makeNewRulesofSize2(combination, currentRule, rulePair.first);
 					}
 					else {
-						vector<Token> tempRule; vector<Token> firstRule; vector<Token> secondRule;
-						Token firstNT = Token(currentRule[0].mLexem + "\'", currentRule[0].mLexemType); firstRule.push_back(currentRule[0]);
-						Token secondNT = Token(currentRule[1].mLexem + "\'", currentRule[1].mLexemType); secondRule.push_back(currentRule[1]);
-						tempRule.push_back(firstNT); tempRule.push_back(secondNT);
-						newRules[rulePair.first].push_back(tempRule);
-						newRules[firstNT].push_back(firstRule);
-						newRules[secondNT].push_back(secondRule);
-						newGrammar.mNonTerminals.insert(firstNT);
-						newGrammar.mNonTerminals.insert(secondNT);
+						combination = { 0, 1 };
+						makeNewRulesOfTwoTerminals(combination, currentRule, rulePair.first);
 					}
 				}
 				break;
@@ -653,7 +658,7 @@ CFG CFG::makeChomskyNormalForm()
 					{
 						newNonTerminal = Token(currentRule[i].mLexem + "\'", currentRule[i].mLexemType);
 						vector<Token> temp; temp.push_back(currentRule[i]);
-						newRules[newNonTerminal].push_back(temp);
+						newNonTerminals.insert(make_pair<Token, vector<Token>>(Token(newNonTerminal), move(temp)));
 						newGrammar.mNonTerminals.insert(newNonTerminal);
 					}
 					else
@@ -680,45 +685,26 @@ CFG CFG::makeChomskyNormalForm()
 					if (newGrammar.mNonTerminals.contains(latestToken))
 						newRules[currentLHS].push_back(vector<Token>(currentRule.begin()+i,currentRule.end()));
 					else {
-						vector<Token> tempRule = {penultToken};
-						Token newNonTerminal(latestToken.mLexem + "\'", latestToken.mLexemType);//b'
-						newGrammar.mNonTerminals.insert(newNonTerminal);
-						tempRule.push_back(newNonTerminal); //b'
-						vector<Token> terminalRule; terminalRule.push_back(latestToken); //->b
-						newRules[newNonTerminal].push_back(terminalRule);//b'->b
-						newRules[currentLHS].push_back(tempRule);//<Ab>->Ab'
+						combination = { currentRule.size() - 2,currentRule.size() - 1 };
+						makeNewRulesofSize2(combination, currentRule, currentLHS);
 					}
 				}
 				else { //rules aB or aa
 					if (newGrammar.mNonTerminals.contains(latestToken)) {
-						vector<Token> tempRule;
-						Token newNonTerminal(penultToken.mLexem + "\'", latestToken.mLexemType);//a'
-						newGrammar.mNonTerminals.insert(newNonTerminal);
-						tempRule.push_back(newNonTerminal);//->a'
-						tempRule.push_back(latestToken);//->a'B
-						vector<Token> terminalRule; terminalRule.push_back(penultToken); //->a
-						newRules[newNonTerminal].push_back(terminalRule);//a'->a
-						newRules[currentLHS].push_back(tempRule);//<aB>->a'B
+						combination = { currentRule.size() - 1,currentRule.size() - 2 };
+						makeNewRulesofSize2(combination, currentRule, currentLHS);
 					}
 					else {
-						vector<Token> tempRule; vector<Token> firstRule; vector<Token> secondRule;
-						Token firstNT = Token(penultToken.mLexem + "\'", penultToken.mLexemType);//a'
-						firstRule.push_back(penultToken);//->a
-						Token secondNT = Token(latestToken.mLexem + "\'", latestToken.mLexemType);//b'
-						secondRule.push_back(latestToken);//->b
-						tempRule.push_back(firstNT); tempRule.push_back(secondNT);//->a'b'
-						newRules[currentLHS].push_back(tempRule);//<ab>->a'b'
-						newRules[firstNT].push_back(firstRule);//a'->a
-						newRules[secondNT].push_back(secondRule);//b'->b
-						newGrammar.mNonTerminals.insert(firstNT);
-						newGrammar.mNonTerminals.insert(secondNT);
+						combination = { currentRule.size() - 2,currentRule.size() - 1 };
+						makeNewRulesOfTwoTerminals(combination, currentRule, currentLHS);
 					}
 				}
 				break;
 			}
 		}
-		removeDublicateRules(newRules);
-	return CFG(newGrammar.mNonTerminals,newGrammar.mTerminals,newRules,newGrammar.mAxiom); // TODO: MAYBE remove chain rules
+	for (auto&& rulePair : newNonTerminals)
+		newRules[rulePair.first].push_back(rulePair.second);
+	return CFG(move(newGrammar.mNonTerminals),move(newGrammar.mTerminals),move(newRules),move(newGrammar.mAxiom)); // TODO: MAYBE remove chain rules
 }
 
 set<Token> CFG::getGoodNonTerminals()

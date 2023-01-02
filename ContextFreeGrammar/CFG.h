@@ -22,7 +22,7 @@ struct Token {
 
 typedef vector<vector<Token>> ruleRHS;
 typedef map<Token, ruleRHS> ruleDict;
-
+//change logic in chomsky alg
 class CFG
 {
 public:

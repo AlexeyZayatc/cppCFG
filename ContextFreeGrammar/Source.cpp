@@ -12,31 +12,32 @@ int main() {
 			{"B",{"AS","b"}}
 		},
 		"S"
-	);
+	);/*
 	chomskyTest.printCFG();
-    chomskyTest.makeChomskyNormalForm().printCFG();
+    chomskyTest.makeChomskyNormalForm().printCFG();*/
 	CFG chomskyTest2(
 		{"S","A","B"},
 		{"a","b"},
 		{
-			{"S",{"aA","aaa","aaa","aA","AaaA"}},
-			{"A",{"AB","a","BBB","BBB","a"}},
-			{"B",{"b","b","BA"}},
+			{"S",{"aA","baaA","AaaA"}},
+			{"A",{"AB","a","BBB"}},
+			{"B",{"bb","BA"}},
 		},
 		"S"
 	);
 	chomskyTest2.printCFG();
-	CFG test(
-		{ "S","A","B" },
-		{ "a","b" },
-		{
-			{"S",{"aA","aaa"}},
-			{"A",{"AB","a","BBB"}},
-			{"B",{"b"}},
-		},
-		"S"
-		);
-	test.printCFG();
+	chomskyTest2.makeChomskyNormalForm().printCFG();
+	//CFG test(
+	//	{ "S","A","B" },
+	//	{ "a","b" },
+	//	{
+	//		{"S",{"aA","aaa"}},
+	//		{"A",{"AB","a","BBB"}},
+	//		{"B",{"b"}},
+	//	},
+	//	"S"
+	//	);
+	//test.printCFG();
 	return 0;
 
 }
