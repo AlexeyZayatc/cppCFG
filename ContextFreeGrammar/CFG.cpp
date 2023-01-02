@@ -395,16 +395,21 @@ CFG CFG::removeBadNonTerminalsAndRules()
 	return CFG(goodNonTerminals,mTerminals,rulesCopy,mAxiom);
 }
 
-void CFG::recursivePushBack(ruleRHS& result,vector<Token> tempChain,vector<Token> chain ,unsigned adjPoint)
+void CFG::recursivePushBack(ruleRHS& result,
+	vector<Token> tempChain,
+	vector<Token> chain,
+	unsigned adjPoint,
+	set<Token>& lambdaNT,
+	set<Token>& terminalNT)
 {
 	for (unsigned j = adjPoint + 1; j < chain.size(); ++j) {
 		if(!getLambdaNonTerminals().contains(chain[j]))
 			tempChain.push_back(chain[j]);
 		else {
-			recursivePushBack(result, tempChain, chain, j);
+			recursivePushBack(result, tempChain, chain, j, lambdaNT, terminalNT);
 			if (getTerminalNTForLambda(getLambdaNonTerminals()).contains(chain[j])) {
 				tempChain.push_back(chain[j]);
-				recursivePushBack(result, tempChain, chain, j);
+				recursivePushBack(result, tempChain, chain, j, lambdaNT, terminalNT);
 			}
 			break;
 		}
@@ -465,10 +470,10 @@ CFG CFG::removeLambdaRules()
 				unsigned i = 0;
 				while (!lambdaNonTerminals.contains(curChain[i]))
 					temp.push_back(curChain[i++]);
-				recursivePushBack(result, temp, curChain, i);
+				recursivePushBack(result, temp, curChain, i,lambdaNonTerminals,nonTerminalsTerminalChain);
 				if (nonTerminalsTerminalChain.contains(curChain[i])) {
 					temp.push_back(curChain[i]);
-					recursivePushBack(result, temp, curChain, i);
+					recursivePushBack(result, temp, curChain, i, lambdaNonTerminals, nonTerminalsTerminalChain);
 				}
 			}
 			else {
@@ -505,9 +510,9 @@ CFG CFG::removeLambdaRules()
 		Token newAxiom(mAxiom.mLexem + '\'', mAxiom.mLexemType);
 		rulesWithLambdaNonTerminals[newAxiom] = newAxiomRules;
 		finalNonTerminals.insert(newAxiom);
-		return CFG(finalNonTerminals, mTerminals, rulesWithLambdaNonTerminals, newAxiom);
+		return CFG(move(finalNonTerminals), mTerminals, move(rulesWithLambdaNonTerminals), move(newAxiom));
 	}
-	return CFG(finalNonTerminals,mTerminals,rulesWithLambdaNonTerminals,mAxiom);
+	return CFG(move(finalNonTerminals),mTerminals,move(rulesWithLambdaNonTerminals),mAxiom);
 }
 
 CFG CFG::removeLeftRecursion()

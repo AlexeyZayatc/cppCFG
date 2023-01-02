@@ -18,10 +18,10 @@ namespace Microsoft {
 
 namespace UnitTest
 {
-	TEST_CLASS(UnitTest)
+	TEST_CLASS(testIsLanguageEmpty)
 	{
 	public:
-		TEST_METHOD(isLanguageEmpty)
+		TEST_METHOD(notEmptySimple)
 		{
 			CFG notEmptyCFG({ "A", "B" },
 				{ "0", "1" },
@@ -31,7 +31,10 @@ namespace UnitTest
 				},
 				"A"
 			);
-			CFG  emptyCFGTerminalChainAchieved(
+			Assert::IsFalse(notEmptyCFG.isLanguageEmpty());
+		}
+		TEST_METHOD(notEmptyTerminalChainWithoutExtraRoutes) {
+			CFG  notEmptyCFGTerminalChainAchieved(
 				{ "A", "B", "S", "C", "D" },
 				{ "a", "b", "c", "d" },
 				  {
@@ -43,24 +46,38 @@ namespace UnitTest
 				  },
 				"S"
 			);
+			Assert::IsFalse(notEmptyCFGTerminalChainAchieved.isLanguageEmpty());
+		}
+		TEST_METHOD(notEmptyWithExtraRoutes)
+		{
 			CFG notEmptyCFGTerminalChainWithExtraRoutes(
 				{ "A", "B", "S", "C", "D", "F" },
 				{ "a", "b", "c", "d" },
 				{ {"S", {"aAa"}} , {"A", {"bBb", "Cdd"}} , {"B", {"cDc"}} , {"C", {"F"}} , {"D", {"abcd"}} },
 				"S"
 			);
+			Assert::IsFalse(notEmptyCFGTerminalChainWithExtraRoutes.isLanguageEmpty());
+		}
+		TEST_METHOD(emptyLanguage)
+		{
 			CFG emptyCFG(
 				{ "A" },
 				{ "0" },
 				{},
 				"A"
 			);
+			Assert::IsTrue(emptyCFG.isLanguageEmpty());
+		}
+		TEST_METHOD(emptyLanguageNoAxiomRule) {
 			CFG   emptyCFGNoAxiomRule(
 				{ "A", "B", "S" },
 				{ "a", "b", "c" },
 				{ {"A", {"a"}}, {"B", {"b", "c", "A"}} },
 				"S"
 			);
+			Assert::IsTrue(emptyCFGNoAxiomRule.isLanguageEmpty());
+		}
+		TEST_METHOD(emptyLanguageNoTerminalChain) {
 			CFG       emptyCFGNoTerminalChain(
 				{ "A", "B", "S", "C", "D" },
 				{ "a", "b", "c", "d" },
@@ -70,137 +87,142 @@ namespace UnitTest
 						} },
 				"S"
 			);
+			Assert::IsTrue(emptyCFGNoTerminalChain.isLanguageEmpty());
+		}
+		TEST_METHOD(emptyLanguageWithRecursion)
+		{
 			CFG   emptyCFGNoTerminalChainRecursion(
 				{ "A", "B", "S", "C", "D" },
 				{ "a", "b", "c", "d" },
 				{ {"S",{"aAa"} }, {"A", { "bBb" }}, {"B", { "cCc" }}, {"C", { "dAd" }} },
 				"S"
 			);
+			Assert::IsTrue(emptyCFGNoTerminalChainRecursion.isLanguageEmpty());
+		}
+		TEST_METHOD(emptyLanguageNoRuleToGoodToken) {
 			CFG   emptyCFGNoRuleToGoodSymbol(
 				{ "A", "B", "C", "S" },
 				{ "a", "b", "c" },
 				{ { "S", {"AB"} },{ "C", { "aaa" }},{ "A", { "BBB" }} },
 				"S"
 			);
-			CFG  emptyCFGLambdaRule({ "A" }, { "0" }, { {"A", {""}} }, "A");
-			Assert::IsTrue(emptyCFG.isLanguageEmpty());
-			Assert::IsTrue(emptyCFGNoAxiomRule.isLanguageEmpty());
-			Assert::IsTrue(emptyCFGNoTerminalChain.isLanguageEmpty());
-			Assert::IsTrue(emptyCFGNoTerminalChainRecursion.isLanguageEmpty());
 			Assert::IsTrue(emptyCFGNoRuleToGoodSymbol.isLanguageEmpty());
-			Assert::IsTrue(emptyCFGLambdaRule.isLanguageEmpty());
-			Assert::IsFalse(notEmptyCFG.isLanguageEmpty());
-			Assert::IsFalse(notEmptyCFGTerminalChainWithExtraRoutes.isLanguageEmpty());
-			Assert::IsFalse(emptyCFGTerminalChainAchieved.isLanguageEmpty());
 		}
-
-		TEST_METHOD(removeUnreachableSymbols) {
-
-			CFG testcase1(
-				{ "S" },
-				{ "1", "0" },
+		TEST_METHOD(emptyLanguageAxiomLambdaRule)
+		{
+			CFG  emptyCFGLambdaRule({ "A" }, { "0" }, { {"A", {""}} }, "A");
+			Assert::IsTrue(emptyCFGLambdaRule.isLanguageEmpty());
+		}
+	};
+	TEST_CLASS(testRemoveUnreachableSymbols) {
+public:
+	TEST_METHOD(grammarWithoutUnrechableSymbols) {
+		CFG testCase1(
+			{ "S" },
+			{ "1", "0" },
 			{
 				{"S", {"0", "1", "0S", "1S"}}
 			},
-				"S"
-			);
+			"S"
+		);
+		Assert::AreEqual(testCase1,testCase1.removeUnreachableSymbols());
 
-			CFG attemp = testcase1.removeUnreachableSymbols();
-			Assert::AreEqual(attemp, testcase1);
-
-			CFG   testcase2(
-				{ "S", "A", "B", "C" },
-				{ "1", "2", "3" },
+	}
+	TEST_METHOD(grammarWithoutTerminalChains) {
+		CFG   testCase2(
+			{ "S", "A", "B", "C" },
+			{ "1", "2", "3" },
 			{
 				{"S", {"A"}},
 				{"A" , {"B"}},
 				{"B" , {"C"}}
 			},
-				"S"
-			);
-			CFG testcase2answer(
-				{ "S", "A", "B", "C" },
-				set<string>(),
-				{
-					{"S", {"A"}},
-					{"A", {"B"}},
-					{"B", {"C"}}
-				},
-				"S"
-			);
-			attemp = testcase2.removeUnreachableSymbols();
-			Assert::AreEqual(attemp, testcase2answer);
-
-			CFG testcase3(
-				{ "S", "A", "B", "C" },
-				{ "a", "b", "c" },
+			"S"
+		);
+		CFG testCase2answer(
+			{ "S", "A", "B", "C" },
+			set<string>(),
+			{
+				{"S", {"A"}},
+				{"A", {"B"}},
+				{"B", {"C"}}
+			},
+			"S"
+		);
+		Assert::AreEqual(testCase2answer,testCase2.removeUnreachableSymbols());
+	}
+	TEST_METHOD(onlyAxiomRuleWithOnlyNonTerminalsAreReacheable){
+		CFG testCase3(
+			{ "S", "A", "B", "C" },
+			{ "a", "b", "c" },
 			{
 				{"S", {"ab", "a"}} ,
 				{"A" , {"B"} },
 				{"B" , {"C"}}
 			},
-				"S"
-			);
-			CFG testcase3answer(
-				{ "S" },
-				{ "a", "b" },
+			"S"
+		);
+		CFG testCase3answer(
+			{ "S" },
+			{ "a", "b" },
 			{
 				{"S", {"ab", "a"}}
 			},
-				"S"
-			);
-			attemp = testcase3.removeUnreachableSymbols();
-			Assert::AreEqual(testcase3answer, attemp);
-
-			CFG testcase4(
-				{ "S", "A", "B", "C" },
-				{ "a", "b", "c" },
+			"S"
+		);
+		Assert::AreEqual(testCase3answer, testCase3.removeUnreachableSymbols());
+	}
+	TEST_METHOD(grammarWithRuleAxiomIntoAxiom) {
+		CFG testCase4(
+			{ "S", "A", "B", "C" },
+			{ "a", "b", "c" },
 			{
 				{"S", {"S"}   },
 				{"A" , {"bBa"}} ,
 				{"B" , {"cCa"}} ,
 				{"C" , {"ccc"}}
 			},
-				"S"
-			);
-			CFG testcase4answer(
-				{ "S" },
-				set<string>(),
-				{
-					{"S", {"S"}}
-				},
-				"S"
-			);
-			attemp = testcase4.removeUnreachableSymbols();
-			Assert::AreEqual(testcase4answer, attemp);
-
-			CFG testcase5(
-				{ "E", "F", "T" },
-				{ "+", "*", "(", ")", "a" },
+			"S"
+		);
+		CFG testCase4answer(
+			{ "S" },
+			set<string>(),
+			{
+				{"S", {"S"}}
+			},
+			"S"
+		);
+		Assert::AreEqual(testCase4answer, testCase4.removeUnreachableSymbols());
+	}
+	TEST_METHOD(onlyAxiomRulesAreReacheable) {
+		CFG testCase5(
+			{ "E", "F", "T" },
+			{ "+", "*", "(", ")", "a" },
 			{
 				{"E", {"E+T", "T"} },
 				{"F" , {"(E)", "a"}}
 			},
-				"E"
-			);
-			CFG testcase5answer(
-				{ "E", "T" },
-				{ "+" },
+			"E"
+		);
+		CFG testCase5answer(
+			{ "E", "T" },
+			{ "+" },
 			{
 				{"E", {"E+T", "T"}} ,
 			},
 			"E"
 			);
-			attemp = testcase5.removeUnreachableSymbols();
-			Assert::AreEqual(testcase5answer, attemp);
-		}
-
-		TEST_METHOD(removeBadNonTerminalsAndRules) {
+		Assert::AreEqual(testCase5answer, testCase5.removeUnreachableSymbols());
+	}
+	};
+	TEST_CLASS(testRemovingBadNonTerminalsAndRules) {
+	public:
+		TEST_METHOD(allCasesInOneGrammar) {
 			CFG testCase1(
 				{ "S", "A", "B", "C", "D", "E", "F", "G" },
 				{ "a", "b", "c", "d", "e", "f", "g" },
 			{
-				{"S", {"aAa", "bbBbb", "abcd"}} ,
+				{"S", {"aAa", "bbBbb", "abcd",""}} ,
 				{"A", {"cCc", "dDd"}} ,
 				{"B", {"bDb", "Eee"}} ,
 				{"C", {"ccc", "G"}} ,
@@ -215,18 +237,19 @@ namespace UnitTest
 				{ "S", "A", "C", "F" },
 				{ "a", "b", "c", "d", "e", "f", "g" },
 			{
-				{"S", {"aAa", "abcd"}} ,
+				{"S", {"aAa", "abcd",""}} ,
 				{"A", {"cCc"}} ,
 				{"C", {"ccc"}} ,
 				{"F", {"fffAAA"}}
 			},
 				"S"
 			);
-			CFG attemp = testCase1.removeBadNonTerminalsAndRules();
-			Assert::AreEqual(attemp, testCase1Answer);
+			Assert::AreEqual(testCase1Answer, testCase1.removeBadNonTerminalsAndRules());
 		}
-
-		TEST_METHOD(removeUselessSymbols) {
+	};
+	TEST_CLASS(testRemoveUselessSymbols) {
+	public:
+		TEST_METHOD(grammarWithoutUselessSymbols) {
 			CFG noUselessSymbols(
 				{ "S" },
 				{ "1", "0" },
@@ -235,11 +258,9 @@ namespace UnitTest
 			},
 				"S"
 			);
-
-			CFG noUselessSymbolsAnswer = noUselessSymbols.removeUselessSymbols();
-
-			Assert::AreEqual(noUselessSymbolsAnswer, noUselessSymbolsAnswer);
-
+			Assert::AreEqual(noUselessSymbols,noUselessSymbols.removeUselessSymbols());
+		}
+		TEST_METHOD(grammarWithOnlyOneGoodRule) {
 			CFG testCase2(
 				{ "S", "A", "B" },
 				{ "a", "b" },
@@ -250,21 +271,19 @@ namespace UnitTest
 				},
 				"S"
 			);
-
-			CFG attemp = testCase2.removeUselessSymbols();
-			CFG test_case2_answer(
+			CFG testCase2Answer(
 				{ "S" },
 				{ "a" },
 				{ {"S", {"a"} } },
 				"S"
 			);
-			Assert::AreEqual(attemp, test_case2_answer);
-
+			Assert::AreEqual(testCase2Answer, testCase2.removeUselessSymbols());
 		}
+	};
+	TEST_CLASS(testRemoveLambdaRules) {
+		TEST_METHOD(grammarWithAxiomLambdaRule) {
 
-		TEST_METHOD(removeLambdaRules) {
-
-			CFG   testcase1(
+			CFG   testCase1(
 				{ "S" },
 				{ "a","b" },
 			{
@@ -272,19 +291,20 @@ namespace UnitTest
 			},
 			"S"
 			);
-			CFG   testcase1Answer(
-				{ "S", "S\'"},
+			CFG   testCase1Answer(
+				{ "S", "S\'" },
 				{ "a","b" },
 			{
 				{"S", {"aSbS","bSaS","abS","aSb","ab","ba","bSa","baS"}},
 				{"S\'", {"S",""}}
 			},
-			"S\'"
+				"S\'"
 			);
-			CFG attemp = testcase1.removeLambdaRules();
-			Assert::AreEqual(attemp, testcase1Answer);
+			Assert::AreEqual(testCase1Answer,testCase1.removeLambdaRules());
+		}
+		TEST_METHOD(lambdaNonTerminalsAreRemovedFromEverything) {
 
-			CFG   testcase2(
+			CFG   testCase2(
 				{ "S","A","B","M","N","K" },
 				{ "a","b" },
 			{
@@ -297,8 +317,8 @@ namespace UnitTest
 			},
 				"S"
 			);
-			CFG   testcase2Answer(
-				{ "N","K","S"},
+			CFG   testCase2Answer(
+				{ "N","K","S" },
 				{ "a","b" },
 			{
 				{"S", {"KN"}},
@@ -307,10 +327,10 @@ namespace UnitTest
 			},
 				"S"
 			);
-			attemp = testcase2.removeLambdaRules();
-			Assert::AreEqual(attemp, testcase2Answer);
-
-			CFG   testcase3(
+			Assert::AreEqual(testCase2Answer,testCase2.removeLambdaRules());
+		}
+		TEST_METHOD(lambdaNonTerminalsHaveTerminalChainRule) {
+			CFG   testCase3(
 				{ "S","A","B","M","N","K" },
 				{ "a","b","c","p" },
 			{
@@ -323,7 +343,7 @@ namespace UnitTest
 			},
 				"S"
 			);
-			CFG   testcase3Answer(
+			CFG   testCase3Answer(
 				{ "S","A","B","M","N","K" },
 				{ "a","b","c","p" },
 			{
@@ -336,10 +356,10 @@ namespace UnitTest
 			},
 				"S"
 			);
-			attemp = testcase3.removeLambdaRules();
-			Assert::AreEqual(attemp, testcase3Answer);
-
-			CFG   testcase4(
+			Assert::AreEqual(testCase3Answer, testCase3.removeLambdaRules());
+		}
+		TEST_METHOD(grammarHasLambdaNonTerminalsWithTerminalChainRule) {
+			CFG   testCase4(
 				{ "S","A","B","M","N","K" },
 				{ "a","b" },
 			{
@@ -352,7 +372,7 @@ namespace UnitTest
 			},
 				"S"
 			);
-			CFG   testcase4Answer(
+			CFG   testCase4Answer(
 				{ "S","M","N","K" },
 				{ "a","b" },
 			{
@@ -363,10 +383,10 @@ namespace UnitTest
 			},
 				"S"
 			);
-			attemp = testcase4.removeLambdaRules();
-			Assert::AreEqual(attemp, testcase4Answer);
-
-			CFG   testcase5(
+			Assert::AreEqual(testCase4Answer,testCase4.removeLambdaRules());
+		}
+		TEST_METHOD(grammarHasLambdaNonTerminalsAndLambdaNonTerminalsWithTerminalChain) {
+			CFG   testCase5(
 				{ "S","A","B","M" },
 				{ "c", "k" },
 			{
@@ -377,7 +397,7 @@ namespace UnitTest
 			},
 				"S"
 			);
-			CFG   testcase5Answer(
+			CFG   testCase5Answer(
 				{ "S","A", "M" },
 				{ "c", "k" },
 			{
@@ -387,27 +407,25 @@ namespace UnitTest
 			},
 				"S"
 			);
-			attemp = testcase5.removeLambdaRules();
-			Assert::AreEqual(attemp, testcase5Answer);
-		}	
-
-		TEST_METHOD(removeLeftRecursion) {
+			Assert::AreEqual(testCase5Answer,testCase5.removeLambdaRules());
+		}
+	};
+	TEST_CLASS(testRemoveLeftRecursion) {
+		TEST_METHOD(noLeftRecursion) {
 			CFG originalGrammar(
 				{ "A", "B" },
 				{ "a", "b", "c", "d" },
 			{
 				{"A", {"aBb", "cd"} },
 				{"B", { "c", "d" }
-		}
+			}
 			},
-			"A"
-				);
-			CFG perferctGrammar = originalGrammar.removeLeftRecursion();
-
-
-			Assert::AreEqual(perferctGrammar, originalGrammar);
-
-			CFG testcase2(
+				"A"
+			);
+			Assert::AreEqual(originalGrammar, originalGrammar.removeLeftRecursion());
+		}
+		TEST_METHOD(AxiomHasLeftRecursionButemptyLanguage) {
+			CFG testCase2(
 				{ "S", "A", "B" },
 				{ "c", "d" },
 			{
@@ -417,7 +435,7 @@ namespace UnitTest
 				"S"
 			);
 
-			CFG testcase2Answer(
+			CFG testCase2Answer(
 				{ "S" },
 				{ },
 			{
@@ -425,10 +443,11 @@ namespace UnitTest
 			},
 				"S"
 			);
-			Assert::AreEqual(testcase2.removeLeftRecursion(), testcase2Answer);
-
-			CFG testcase3(
-				{  "B","A" },
+			Assert::AreEqual(testCase2Answer,testCase2.removeLeftRecursion());
+		}
+		TEST_METHOD(axiomHasRecursionOtherNonTerminalHasNot) {
+			CFG testCase3(
+				{ "B","A" },
 				{ "c", "d" },
 			{
 				{"A", {"Bc", "Acd"}} ,
@@ -436,35 +455,29 @@ namespace UnitTest
 			},
 				"A"
 			);
-
-			ruleDict testcaseRules;
-			ruleRHS testcaseRuleRHS;
-			set<Token> NT;
-			Token A("A", "char");
-			Token As("A\'", "char");
-			Token B("B", "char");
-			NT.insert(B); NT.insert(A); NT.insert(As);
-			Token c("c", "char");
-			Token d("d", "char");
-			set<Token> T; T.insert(c); T.insert(d);
-			vector<Token> chain;
-
-			chain.push_back(B); chain.push_back(c); testcaseRuleRHS.push_back(chain);
-			chain.push_back(As); testcaseRuleRHS.push_back(chain);
-			testcaseRules[A] = testcaseRuleRHS;
-			testcaseRuleRHS.clear(); chain.clear();
-			chain.push_back(c); testcaseRuleRHS.push_back(chain);  
-			chain.clear();
-			chain.push_back(d); testcaseRuleRHS.push_back(chain);
-			testcaseRules[B] = testcaseRuleRHS;
-			testcaseRuleRHS.clear(); chain.clear();
-			chain.push_back(c); chain.push_back(d); testcaseRuleRHS.push_back(chain);
-			chain.push_back(As); testcaseRuleRHS.push_back(chain);
-			testcaseRules[As] = testcaseRuleRHS;
-			CFG testcase3Answer(NT,T,testcaseRules,A);
-			Assert::AreEqual(testcase3Answer, testcase3.removeLeftRecursion());
-
-			CFG testcase4(
+			CFG testCase3Answer(
+				{"B","A","A\'"},
+				{"c","d"},
+				{ 
+					{"A",{
+						{"B","c"},
+						{"B","c","A\'"}
+				}},
+					{"B",{
+						{"c"},
+						{"d"}
+				}},
+					{"A\'",{
+						{"c","d"},
+						{"c","d","A\'"}
+				}},
+				},
+				Token("A","char")
+			);
+			Assert::AreEqual(testCase3Answer, testCase3.removeLeftRecursion());
+		}
+		TEST_METHOD(axiomHasNoRecursionOtherNonTerminalHasRecursionButEmptyLanguage) {
+			CFG testCase4(
 				{ "A", "B" },
 				{ "c", "d" },
 			{
@@ -473,7 +486,7 @@ namespace UnitTest
 			},
 				"A"
 			);
-			CFG testcase4Answer(
+			CFG testCase4Answer(
 				{ "S" },
 				{ },
 			{
@@ -481,11 +494,12 @@ namespace UnitTest
 			},
 				"S"
 			);
-			Assert::AreEqual(testcase4.removeLeftRecursion(), testcase4Answer);
+			Assert::AreEqual(testCase4Answer,testCase4.removeLeftRecursion());
+		}
+		TEST_METHOD(axiomAndNonTerminalHaveLeftRecursionToEachOther) {
 
-
-			CFG testcase5(
-				{  "B","A" },
+			CFG testCase5(
+				{ "B","A" },
 				{ "c", "d" },
 			{
 				{"B" , {"Ac", "Ad"}},
@@ -493,29 +507,34 @@ namespace UnitTest
 			},
 				"A"
 			);
-			Token Bs("B\'", "char");
-			NT.erase(As); NT.insert(Bs);
-			chain.clear(); testcaseRuleRHS.clear(); testcaseRules.clear();
-			chain.push_back(B); chain.push_back(c); testcaseRuleRHS.push_back(chain); chain.clear();
-			chain.push_back(d); chain.push_back(c); testcaseRuleRHS.push_back(chain);
-			testcaseRules[A] = testcaseRuleRHS;
-			chain.clear(); testcaseRuleRHS.clear();
-			chain.push_back(d); chain.push_back(c); chain.push_back(c); testcaseRuleRHS.push_back(chain);
-			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
-			chain.pop_back(); chain.pop_back(); chain.push_back(d); testcaseRuleRHS.push_back(chain);
-			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
-			testcaseRules[B] = testcaseRuleRHS;
-			testcaseRuleRHS.clear(); chain.clear();
-			chain.push_back(c); chain.push_back(c); testcaseRuleRHS.push_back(chain);
-			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
-			chain.clear(); chain.push_back(c); chain.push_back(d); testcaseRuleRHS.push_back(chain);
-			chain.push_back(Bs); testcaseRuleRHS.push_back(chain);
-			testcaseRules[Bs] = testcaseRuleRHS;
-			CFG testcase5Answer(NT,T,testcaseRules,A);
+			CFG testCase5Answer(
+				{ "B","A","B\'" },
+				{ "c","d" },
+				{
+					{"A",{
+						{"B","c"},
+						{"d","c"}
+				}},
+					{"B",{
+						{"d","c","c"},
+						{"d","c","c","B\'"},
+						{"d","c","d"},
+						{"d","c","d","B\'"}
+				}},
+					{"B\'",{
+						{"c","c"},
+						{"c","c","B\'"},
+						{"c","d"},
+						{"c","d","B\'"}
+				}},
+				},
+				Token("A", "char")
+			);
+			Assert::AreEqual(testCase5Answer, testCase5.removeLeftRecursion());
+		}
+		TEST_METHOD(axiomHasLeftRecursionOtherNonTerminalsAreUnreachable) {
 
-			Assert::AreEqual(testcase5Answer, testcase5.removeLeftRecursion());
-
-			CFG testcase6(
+			CFG testCase6(
 				{ "A", "B" },
 				{ "c", "d" },
 			{
@@ -524,17 +543,109 @@ namespace UnitTest
 			},
 				"A"
 			);
-			NT.erase(Bs); NT.erase(B); NT.insert(As);
-			testcaseRules.clear(); testcaseRuleRHS.clear(); chain.clear();
-			chain.push_back(d); chain.push_back(c); testcaseRuleRHS.push_back(chain);
-			chain.push_back(As); testcaseRuleRHS.push_back(chain);
-			testcaseRules[A] = testcaseRuleRHS;
-			chain.clear(); testcaseRuleRHS.clear();
-			chain.push_back(c); testcaseRuleRHS.push_back(chain);
-			chain.push_back(As); testcaseRuleRHS.push_back(chain);
-			testcaseRules[As] = testcaseRuleRHS;
-			CFG testcase6Answer(NT, T, testcaseRules, A);
-			Assert::AreEqual( testcase6Answer, testcase6.removeLeftRecursion());
+			CFG testCase6Answer(
+				{ "A","A\'" },
+				{ "c","d" },
+				{
+					{"A",{
+						{"d","c"},
+						{"d","c","A\'"}
+				}},
+					{"A\'",{
+						{"c"},
+						{"c","A\'"},
+				}},
+				},
+				Token("A", "char")
+			);
+			Assert::AreEqual(testCase6Answer, testCase6.removeLeftRecursion());
+
+		}
+	};
+	TEST_CLASS(testMakeChomskyForm) {
+		TEST_METHOD(noLambdaAxiomRule) {
+			CFG testCase1(
+				{ "S","A","B" },
+				{ "a","b" },
+				{
+					{"S",{"aAB","BA"}},
+					{"A",{"BBB","a"}},
+					{"B",{"AS","b"}}
+				},
+				"S"
+			);
+			CFG testCase1Answer(
+				{ "A","B","S","<AB>","<BB>","a'" },
+				{ "a","b" },
+				{
+			{"S",
+				{
+				{"B","A"},
+				{"a'","<AB>"},
+				}},
+			{"A",
+				{
+					{"a"},
+					{"B","<BB>"}
+				}},
+				{"B",{
+					{"b"},
+					{"A","S"}
+				}},
+				{"a'",{
+					{"a"}
+				}},
+				{"<AB>",{
+					{"A","B"}
+				}},
+				{"<BB>",{
+					{"B","B"}
+				}}
+
+				},
+				Token("S", "char")
+			);
+			Assert::AreEqual(testCase1Answer, testCase1.makeChomskyNormalForm());
+		}
+		TEST_METHOD(axiomHasLambdaRule) {
+			CFG testCase2(
+				{ "S","A","B" },
+				{ "a","b" },
+				{
+					{"S",{"aA",""}},
+					{"A",{"AB","a","BBB"}},
+					{"B",{"b"}},
+				},
+				"S"
+				);
+			CFG testCase2Answer(
+				{ "A","B","S","<BB>","a'","S'" },
+				{ "a","b" },
+				{
+			{"S",
+				{
+				{"a'","A"}
+				}},
+			{"A",
+				{
+					{"a"},
+					{"B","<BB>"},
+					{"A","B"}
+				}},
+				{"B",{
+					{"b"},
+				}},
+				{"a'",{
+					{"a"}
+				}},
+				{"<BB>",{
+					{"B","B"}
+				}}
+				},
+				Token("S'", "char")
+			);
+
+			Assert::AreEqual(testCase2Answer, testCase2.makeChomskyNormalForm());
 		}
 	};
 }
