@@ -37,13 +37,13 @@ namespace UnitTest
 			CFG  notEmptyCFGTerminalChainAchieved(
 				{ "A", "B", "S", "C", "D" },
 				{ "a", "b", "c", "d" },
-				  {
-					  {"S", {"aAa"}} ,
-				  {"A", {"bBb"}} ,
-				  {"B", {"cCc"}} ,
-				  {"C", {"dDd"}} ,
-				  {"D", {"abcd"}}
-				  },
+				{
+					{"S", {"aAa"}},
+					{"A", {"bBb"}},
+					{"B", {"cCc"}},
+					{"C", {"dDd"}},
+					{"D", {"abcd"}}
+				},
 				"S"
 			);
 			Assert::IsFalse(notEmptyCFGTerminalChainAchieved.isLanguageEmpty());
@@ -53,7 +53,13 @@ namespace UnitTest
 			CFG notEmptyCFGTerminalChainWithExtraRoutes(
 				{ "A", "B", "S", "C", "D", "F" },
 				{ "a", "b", "c", "d" },
-				{ {"S", {"aAa"}} , {"A", {"bBb", "Cdd"}} , {"B", {"cDc"}} , {"C", {"F"}} , {"D", {"abcd"}} },
+				{
+					{"S", {"aAa"}},
+					{"A", {"bBb", "Cdd"}},
+					{"B", {"cDc"}},
+					{"C", {"F"}},
+					{"D", {"abcd"}}
+				},
 				"S"
 			);
 			Assert::IsFalse(notEmptyCFGTerminalChainWithExtraRoutes.isLanguageEmpty());
@@ -72,7 +78,10 @@ namespace UnitTest
 			CFG   emptyCFGNoAxiomRule(
 				{ "A", "B", "S" },
 				{ "a", "b", "c" },
-				{ {"A", {"a"}}, {"B", {"b", "c", "A"}} },
+				{
+					{"A", {"a"}},
+					{"B", {"b", "c", "A"}}
+				},
 				"S"
 			);
 			Assert::IsTrue(emptyCFGNoAxiomRule.isLanguageEmpty());
@@ -81,10 +90,12 @@ namespace UnitTest
 			CFG       emptyCFGNoTerminalChain(
 				{ "A", "B", "S", "C", "D" },
 				{ "a", "b", "c", "d" },
-				{ {"S", {"aAa"} }, {"A", { "bBb" }
-					   }, {"B", { "cCc" }
-					  }, {"C", { "dDd" }
-						} },
+				{
+					{"S", {"aAa"}},
+					{"A", { "bBb" }},
+					{"B", { "cCc" }},
+					{"C", { "dDd" }}
+				},
 				"S"
 			);
 			Assert::IsTrue(emptyCFGNoTerminalChain.isLanguageEmpty());
@@ -94,7 +105,12 @@ namespace UnitTest
 			CFG   emptyCFGNoTerminalChainRecursion(
 				{ "A", "B", "S", "C", "D" },
 				{ "a", "b", "c", "d" },
-				{ {"S",{"aAa"} }, {"A", { "bBb" }}, {"B", { "cCc" }}, {"C", { "dAd" }} },
+				{
+					{"S", {"aAa"}},
+					{"A", { "bBb" }},
+					{"B", { "cCc" }},
+					{"C", { "dAd" }}
+				},
 				"S"
 			);
 			Assert::IsTrue(emptyCFGNoTerminalChainRecursion.isLanguageEmpty());
@@ -103,14 +119,24 @@ namespace UnitTest
 			CFG   emptyCFGNoRuleToGoodSymbol(
 				{ "A", "B", "C", "S" },
 				{ "a", "b", "c" },
-				{ { "S", {"AB"} },{ "C", { "aaa" }},{ "A", { "BBB" }} },
+				{
+					{"S", {"AB"}},
+					{"C", { "aaa" }},
+					{"A", { "BBB" }}
+				},
 				"S"
 			);
 			Assert::IsTrue(emptyCFGNoRuleToGoodSymbol.isLanguageEmpty());
 		}
 		TEST_METHOD(emptyLanguageAxiomLambdaRule)
 		{
-			CFG  emptyCFGLambdaRule({ "A" }, { "0" }, { {"A", {""}} }, "A");
+			CFG  emptyCFGLambdaRule(
+				{ "A" },
+				{ "0" },
+				{
+					{"A", {""}}
+				},
+				"A");
 			Assert::IsTrue(emptyCFGLambdaRule.isLanguageEmpty());
 		}
 	};
@@ -156,7 +182,7 @@ public:
 			{ "S", "A", "B", "C" },
 			{ "a", "b", "c" },
 			{
-				{"S", {"ab", "a"}} ,
+				{"S", {"ab", "a"}},
 				{"A" , {"B"} },
 				{"B" , {"C"}}
 			},
@@ -177,9 +203,9 @@ public:
 			{ "S", "A", "B", "C" },
 			{ "a", "b", "c" },
 			{
-				{"S", {"S"}   },
-				{"A" , {"bBa"}} ,
-				{"B" , {"cCa"}} ,
+				{"S" , {"S"}  },
+				{"A" , {"bBa"}},
+				{"B" , {"cCa"}},
 				{"C" , {"ccc"}}
 			},
 			"S"
@@ -221,27 +247,27 @@ public:
 			CFG testCase1(
 				{ "S", "A", "B", "C", "D", "E", "F", "G" },
 				{ "a", "b", "c", "d", "e", "f", "g" },
-			{
-				{"S", {"aAa", "bbBbb", "abcd",""}} ,
-				{"A", {"cCc", "dDd"}} ,
-				{"B", {"bDb", "Eee"}} ,
-				{"C", {"ccc", "G"}} ,
-				{"D", {"eeEee"}} ,
-				{"E", {"gGg"}} ,
-				{"G", {"G"}} ,
-				{"F", {"fffAAA"}}
-			},
+				{
+					{"S", {"aAa", "bbBbb", "abcd",""}} ,
+					{"A", {"cCc", "dDd"}} ,
+					{"B", {"bDb", "Eee"}} ,
+					{"C", {"ccc", "G"}} ,
+					{"D", {"eeEee"}} ,
+					{"E", {"gGg"}} ,
+					{"G", {"G"}} ,
+					{"F", {"fffAAA"}}
+				},
 				"S"
 			);
 			CFG	testCase1Answer(
 				{ "S", "A", "C", "F" },
 				{ "a", "b", "c", "d", "e", "f", "g" },
-			{
-				{"S", {"aAa", "abcd",""}} ,
-				{"A", {"cCc"}} ,
-				{"C", {"ccc"}} ,
-				{"F", {"fffAAA"}}
-			},
+				{
+					{"S", {"aAa", "abcd",""}} ,
+					{"A", {"cCc"}} ,
+					{"C", {"ccc"}} ,
+					{"F", {"fffAAA"}}
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase1Answer, testCase1.removeBadNonTerminalsAndRules());
@@ -253,9 +279,9 @@ public:
 			CFG noUselessSymbols(
 				{ "S" },
 				{ "1", "0" },
-			{
-				{"S", {"0", "1", "0S", "1S"}}
-			},
+				{
+					{"S", {"0", "1", "0S", "1S"}}
+				},
 				"S"
 			);
 			Assert::AreEqual(noUselessSymbols,noUselessSymbols.removeUselessSymbols());
@@ -266,15 +292,17 @@ public:
 				{ "a", "b" },
 				{
 					{"S", {"a", "A"}},
-				{"A", {"AB"}}
-				, {"B", {"b"} }
+					{"A", {"AB"}},
+					{"B", {"b"} }
 				},
 				"S"
 			);
 			CFG testCase2Answer(
 				{ "S" },
 				{ "a" },
-				{ {"S", {"a"} } },
+				{
+					{"S", {"a"} }
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase2Answer, testCase2.removeUselessSymbols());
@@ -286,18 +314,18 @@ public:
 			CFG   testCase1(
 				{ "S" },
 				{ "a","b" },
-			{
-				{"S", {"aSbS","bSaS",""}},
-			},
-			"S"
+				{
+					{"S", {"aSbS","bSaS",""}},
+				},
+				"S"
 			);
 			CFG   testCase1Answer(
 				{ "S", "S\'" },
 				{ "a","b" },
-			{
-				{"S", {"aSbS","bSaS","abS","aSb","ab","ba","bSa","baS"}},
-				{"S\'", {"S",""}}
-			},
+				{
+					{"S", {"aSbS","bSaS","abS","aSb","ab","ba","bSa","baS"}},
+					{"S\'", {"S",""}}
+				},
 				"S\'"
 			);
 			Assert::AreEqual(testCase1Answer,testCase1.removeLambdaRules());
@@ -307,24 +335,24 @@ public:
 			CFG   testCase2(
 				{ "S","A","B","M","N","K" },
 				{ "a","b" },
-			{
-				{"S", {"KNM"}},
-				{"A", {""}},
-				{"B", {""}},
-				{"M", {"AB"}},
-				{"N", {"Ab"}},
-				{"K", {"ab"}}
-			},
+				{
+					{"S", {"KNM"}},
+					{"A", {""}},
+					{"B", {""}},
+					{"M", {"AB"}},
+					{"N", {"Ab"}},
+					{"K", {"ab"}}
+				},
 				"S"
 			);
 			CFG   testCase2Answer(
 				{ "N","K","S" },
 				{ "a","b" },
-			{
-				{"S", {"KN"}},
-				{"N", {"b"}},
-				{"K", {"ab"}}
-			},
+				{
+					{"S", {"KN"}},
+					{"N", {"b"}},
+					{"K", {"ab"}}
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase2Answer,testCase2.removeLambdaRules());
@@ -333,27 +361,27 @@ public:
 			CFG   testCase3(
 				{ "S","A","B","M","N","K" },
 				{ "a","b","c","p" },
-			{
-				{"S", {"KNM"}},
-				{"A", {"", "c"}},
-				{"B", {"", "p"}},
-				{"M", {"AB"}},
-				{"N", {"Ab"}},
-				{"K", {"ab"}}
-			},
+				{
+					{"S", {"KNM"}},
+					{"A", {"", "c"}},
+					{"B", {"", "p"}},
+					{"M", {"AB"}},
+					{"N", {"Ab"}},
+					{"K", {"ab"}}
+				},
 				"S"
 			);
 			CFG   testCase3Answer(
 				{ "S","A","B","M","N","K" },
 				{ "a","b","c","p" },
-			{
-				{"S", {"KNM","KN"}},
-				{"A", {"c"}},
-				{"B", {"p"}},
-				{"M", {"AB","A","B"}},
-				{"N", {"Ab","b"}},
-				{"K", {"ab"}}
-			},
+				{
+					{"S", {"KNM","KN"}},
+					{"A", {"c"}},
+					{"B", {"p"}},
+					{"M", {"AB","A","B"}},
+					{"N", {"Ab","b"}},
+					{"K", {"ab"}}
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase3Answer, testCase3.removeLambdaRules());
@@ -362,25 +390,25 @@ public:
 			CFG   testCase4(
 				{ "S","A","B","M","N","K" },
 				{ "a","b" },
-			{
-				{"S", {"KNM"}},
-				{"A", {""}},
-				{"B", {""}},
-				{"M", {"AB","a"}},
-				{"N", {"Ab"}},
-				{"K", {"ab"}}
-			},
+				{
+					{"S", {"KNM"}},
+					{"A", {""}},
+					{"B", {""}},
+					{"M", {"AB","a"}},
+					{"N", {"Ab"}},
+					{"K", {"ab"}}
+				},
 				"S"
 			);
 			CFG   testCase4Answer(
 				{ "S","M","N","K" },
 				{ "a","b" },
-			{
-				{"S", {"KN","KNM"}},
-				{"M", {"a"}},
-				{"N", {"b"}},
-				{"K", {"ab"}}
-			},
+				{
+					{"S", {"KN","KNM"}},
+					{"M", {"a"}},
+					{"N", {"b"}},
+					{"K", {"ab"}}
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase4Answer,testCase4.removeLambdaRules());
@@ -389,37 +417,129 @@ public:
 			CFG   testCase5(
 				{ "S","A","B","M" },
 				{ "c", "k" },
-			{
-				{"S", {"Mk"}},
-				{"A", {"","c"}},
-				{"B", {""}},
-				{"M", {"AB"}}
-			},
+				{
+					{"S", {"Mk"}},
+					{"A", {"","c"}},
+					{"B", {""}},
+					{"M", {"AB"}}
+				},
 				"S"
 			);
 			CFG   testCase5Answer(
 				{ "S","A", "M" },
 				{ "c", "k" },
-			{
-				{"S", {"Mk","k"}},
-				{"A", {"c"}},
-				{"M", {"A"}}
-			},
+				{
+					{"S", {"Mk","k"}},
+					{"A", {"c"}},
+					{"M", {"A"}}
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase5Answer,testCase5.removeLambdaRules());
 		}
 	};
+
+	/*def test_remove_chain_rules(self) :
+	language_empty: CFG = CFG(
+		{ 'S','A','B' },
+		{ 'a','b' },
+		{ 'A' : ['a','ab','B'] , 'B' : ['A','Abb','bbaa'] },
+		'S'
+	)
+		language_empty_answer : CFG = CFG(
+			{ 'S' },
+			{ 'a','b' },
+			{ 'S': [''] },
+			'S'
+		)
+		self.assertEqual(language_empty.remove_chain_rules(), language_empty_answer)
+		cycle_one_step: CFG = CFG(
+			{ 'S', 'A' },
+			{ 'a', 'b' },
+			{ 'S': ['S','Aab'] , 'A' : ['ab','ba'] },
+			'S'
+		)
+		cycle_one_step_answer : CFG = CFG(
+			{ 'S', 'A' },
+			{ 'a', 'b' },
+			{ 'S': ['Aab'] , 'A' : ['ab','ba'] },
+			'S'
+		)
+		self.assertEqual(cycle_one_step.remove_chain_rules(), cycle_one_step_answer)
+		cycle_more_steps: CFG = CFG(
+			{ 'S', 'A', 'B', 'C' },
+			{ 'a', 'b' },
+			{ 'S': ['Bab','Aab'] , 'A' : ['abC','Cba'] , 'B' : ['C','A','ba'] , 'C' : ['A','B','bab'] },
+			'S'
+		)
+		cycle_more_steps_answer : CFG = CFG(
+			{ 'S', 'A', 'B', 'C' },
+			{ 'a', 'b' },
+			{ 'S': ['Bab','Aab'] , 'A' : ['abC','Cba'] , 'B' : ['ba', 'bab','abC','Cba'] , 'C' : ['abC','Cba','ba','bab'] },
+			'S'
+		)
+		self.assertEqual(cycle_more_steps.remove_chain_rules(), cycle_more_steps_answer)
+		useless_non_terminal: CFG = CFG(
+			{ 'A', 'B', 'C' },
+			{ 'a', 'b' },
+			{ 'A': ['Ba','B'] , 'B' : ['C','bab'] },
+			'A'
+		)
+		useless_non_terminal_answer : CFG = CFG(
+			{ 'A', 'B' },
+			{ 'a', 'b' },
+			{ 'A': ['Ba','bab'] , 'B' : ['bab'] },
+			'A'
+		)
+		self.assertEqual(useless_non_terminal.remove_chain_rules(), useless_non_terminal_answer)*/
+
+	TEST_CLASS(testRemoveChainRules) {
+		TEST_METHOD(language_empty) {
+			CFG language_empty(
+				{ "S","A","B" },
+				{ "a","b" },
+				{
+					{ "A",{"a","ab","B"} },
+					{ "B",{"A","Abb","bbaa"} }
+				},
+				"S"
+			);
+
+			CFG language_empty_answer(
+				{ "S" },
+				{ "a","b" },
+				{
+					{ "S",{} }
+				},
+				"S"
+			);
+
+
+			Assert::AreEqual(language_empty_answer, language_empty.removeChainRules());
+		}
+		/*TEST_METHOD(cycle_one_step) {
+
+			Assert::AreEqual(cycle_one_step_answer, cycle_one_step.removeChainRules());
+		}
+		TEST_METHOD(cycle_more_steps) {
+
+			Assert::AreEqual(cycle_more_steps_answer, cycle_more_steps.removeChainRules());
+		}
+		TEST_METHOD(useless_non_terminal) {
+
+			Assert::AreEqual(useless_non_terminal_answer, useless_non_terminal.removeChainRules());
+		}*/
+	};
+
 	TEST_CLASS(testRemoveLeftRecursion) {
 		TEST_METHOD(noLeftRecursion) {
 			CFG originalGrammar(
 				{ "A", "B" },
 				{ "a", "b", "c", "d" },
-			{
-				{"A", {"aBb", "cd"} },
-				{"B", { "c", "d" }
-			}
-			},
+				{
+					{ "A", {"aBb", "cd"} },
+					{ "B", { "c", "d" } }
+				},
 				"A"
 			);
 			Assert::AreEqual(originalGrammar, originalGrammar.removeLeftRecursion());
@@ -428,19 +548,19 @@ public:
 			CFG testCase2(
 				{ "S", "A", "B" },
 				{ "c", "d" },
-			{
-				{"A", {"AB", "Acd"}} ,
-				{"B" , {"c", "d"}}
-			},
+				{
+					{"A", {"AB", "Acd"}},
+					{"B" , {"c", "d"}}
+				},
 				"S"
 			);
 
 			CFG testCase2Answer(
 				{ "S" },
 				{ },
-			{
-				{"S", {""} }
-			},
+				{
+					{"S", {""} }
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase2Answer,testCase2.removeLeftRecursion());
@@ -449,10 +569,10 @@ public:
 			CFG testCase3(
 				{ "B","A" },
 				{ "c", "d" },
-			{
-				{"A", {"Bc", "Acd"}} ,
-				{"B" , {"c", "d"}}
-			},
+				{
+					{"A", {"Bc", "Acd"}} ,
+					{"B" , {"c", "d"}}
+				},
 				"A"
 			);
 			CFG testCase3Answer(
@@ -480,18 +600,18 @@ public:
 			CFG testCase4(
 				{ "A", "B" },
 				{ "c", "d" },
-			{
-				{"A", {"Bc"}} ,
-				{"B" , {"Bc", "Bd"}}
-			},
+				{
+					{"A", {"Bc"}} ,
+					{"B" , {"Bc", "Bd"}}
+				},
 				"A"
 			);
 			CFG testCase4Answer(
 				{ "S" },
 				{ },
-			{
-				{"S", {""}}
-			},
+				{
+					{"S", {""}}
+				},
 				"S"
 			);
 			Assert::AreEqual(testCase4Answer,testCase4.removeLeftRecursion());
@@ -501,10 +621,10 @@ public:
 			CFG testCase5(
 				{ "B","A" },
 				{ "c", "d" },
-			{
-				{"B" , {"Ac", "Ad"}},
-				{"A", {"Bc", "dc"}}
-			},
+				{
+					{"B" , {"Ac", "Ad"}},
+					{"A", {"Bc", "dc"}}
+				},
 				"A"
 			);
 			CFG testCase5Answer(
@@ -537,10 +657,10 @@ public:
 			CFG testCase6(
 				{ "A", "B" },
 				{ "c", "d" },
-			{
-				{"A", {"Ac", "dc"}} ,
-				{"B" , {"Ad"}}
-			},
+				{
+					{"A", {"Ac", "dc"}} ,
+					{"B" , {"Ad"}}
+				},
 				"A"
 			);
 			CFG testCase6Answer(

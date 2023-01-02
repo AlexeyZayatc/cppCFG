@@ -43,13 +43,14 @@ public:
 	CFG& operator=(CFG&& other) noexcept;
 	void printCFG() const noexcept;
 	bool operator==(const CFG& other) const noexcept;
-	bool isLanguageEmpty() const ;
-	CFG emptyLanguage() const ;
+	bool isLanguageEmpty() const;
+	CFG emptyLanguage() const;
 	CFG removeUnreachableSymbols() const;
 	CFG removeUselessSymbols() const;
 	CFG removeBadNonTerminalsAndRules() const;
-	CFG removeLambdaRules() const ;
-	CFG removeLeftRecursion() const ;
+	CFG removeLambdaRules() const;
+	CFG removeLeftRecursion() const;
+	CFG removeChainRules() const;
 	CFG makeChomskyNormalForm() const;
 	wstring toWString() const;
 private:
