@@ -52,6 +52,7 @@ public:
 	CFG removeLeftRecursion() const;
 	CFG removeChainRules() const;
 	CFG makeChomskyNormalForm() const;
+	CFG makeGreibachNormalForm() const;
 	wstring toWString() const;
 private:
 	bool isRuleContainOnlyGoodTokens(const vector<Token>& rhs, const set<Token>& goodTokens)const ;

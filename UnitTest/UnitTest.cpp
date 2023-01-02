@@ -768,4 +768,50 @@ public:
 			Assert::AreEqual(testCase2Answer, testCase2.makeChomskyNormalForm());
 		}
 	};
+	TEST_CLASS(testMakeGreibachFrom) {
+		TEST_METHOD(arithmeticsExpressions) {
+			CFG cfgMath(
+				{ "D","E","F" },
+				{ "+","*","(",")","a" },
+				{
+				  {"E", {"E*F","F"}},
+				  {"F", {"(D)","a"}},
+				  {"D", {"D+E","E"}}
+				},
+				"D"
+			);
+			CFG cfgMathAnswer(
+				{ "D","E","F","D\'","E\'",")\'"},
+				{ "+","*","(",")","a" },
+				{
+			{"D",
+				{
+				{"B","A"},
+				{"a'","<AB>"},
+				}},
+			{"A",
+				{
+					{"a"},
+					{"B","<BB>"}
+				}},
+				{"B",{
+					{"b"},
+					{"A","S"}
+				}},
+				{"a'",{
+					{"a"}
+				}},
+				{"<AB>",{
+					{"A","B"}
+				}},
+				{"<BB>",{
+					{"B","B"}
+				}}
+
+				},
+				Token("D", "char")
+			);
+			Assert::AreEqual(cfgMathAnswer, cfgMath);
+		}
+	};
 }

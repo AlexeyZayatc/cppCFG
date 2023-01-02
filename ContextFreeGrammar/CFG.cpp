@@ -44,10 +44,11 @@ CFG::CFG(const set<string>& nonTerminals,
 		for (auto& t : terminals)
 			if (t.empty())
 				throw Exception("Terminals has lambda string");
-		for (auto& nt : nonTerminals)
-			for (auto& t : terminals)
-				if (nt == t)
-					throw Exception("Terminal and Non-terminal sets intersect\n");
+		vector<string> intersection;
+		set_intersection(nonTerminals.begin(), nonTerminals.end(),
+			terminals.begin(), terminals.end(), back_inserter(intersection));
+		if (!intersection.empty())
+			throw Exception("Terminal and Non-terminal sets intersect\n");
 		map<string, vector<string>> rulesCopy = rules;
 		std::string cursubStr;
 		for (auto& rulePair : rulesCopy) {
@@ -112,10 +113,11 @@ CFG::CFG(const set<string>& nonTerminals,
 		for (auto& t : terminals)
 			if (t.empty())
 				throw Exception("Terminals has lambda string");
-		for (auto& nt : nonTerminals)
-			for (auto& t : terminals)
-				if (nt == t)
-					throw Exception("Terminal and Non-terminal sets intersect\n");
+		vector<string> intersection;
+		set_intersection(nonTerminals.begin(), nonTerminals.end(),
+			terminals.begin(), terminals.end(), back_inserter(intersection));
+		if (!intersection.empty())
+			throw Exception("Terminal and Non-terminal sets intersect\n");
 		map<string, vector<vector<string>>> rulesCopy = rules;
 		for (auto& rulePair : rulesCopy) {
 			if (!nonTerminals.contains(rulePair.first))
@@ -179,10 +181,11 @@ CFG::CFG(const set<Token>& nonTerminals,
 		for (auto& t : terminals)
 			if (t.mLexem.empty())
 				throw Exception("Terminals has lambda token");
-		for (auto& nt : nonTerminals)
-			for (auto& t : terminals)
-				if (nt == t)
-					throw Exception("Terminal and Non-terminal sets intersect");
+		vector<Token> intersection;
+		set_intersection(nonTerminals.begin(), nonTerminals.end(),
+			terminals.begin(), terminals.end(), back_inserter(intersection));
+		if (!intersection.empty())
+			throw Exception("Terminal and Non-terminal sets intersect\n");
 		ruleDict rulesCopy = rules;
 		for (auto& rulePair : rulesCopy) {
 			if (!nonTerminals.contains(rulePair.first))
@@ -430,8 +433,8 @@ void CFG::removeDublicateRules(ruleDict& rules)
 
 CFG CFG::removeLambdaRules() const 
 { 
-	set<Token> lambdaNonTerminals = getLambdaNonTerminals();
-	set<Token> nonTerminalsTerminalChain = getTerminalNTForLambda(lambdaNonTerminals);
+	const set<Token> lambdaNonTerminals = getLambdaNonTerminals();
+	const set<Token> nonTerminalsTerminalChain = getTerminalNTForLambda(lambdaNonTerminals);
 	ruleDict  rulesWithLambdaNonTerminals;
 	ruleDict rulesWLNTBuffer;
 	auto onlyLambdaCheck = [&](const vector<Token>& curChain) {
@@ -521,8 +524,9 @@ CFG CFG::removeLeftRecursion() const
 		return emptyLanguage();
 	CFG newGrammar = removeLambdaRules().removeUselessSymbols();//TODO: removeChainRules;
 	vector<Token> orderedTokens;
-	for (auto& nonTerminal : mNonTerminals)
-		orderedTokens.push_back(nonTerminal);
+	//for (auto& nonTerminal : mNonTerminals)
+	//	orderedTokens.push_back(nonTerminal);
+	orderedTokens.assign(newGrammar.mNonTerminals.begin(), newGrammar.mNonTerminals.end());
 	unsigned i, j;
 	i = 0;
 	do {
@@ -704,13 +708,13 @@ CFG CFG::makeChomskyNormalForm() const
 						newRules[rulePair.first].push_back(currentRule);
 					}
 					else {
-						combination = { 0,1 };
-						makeNewRulesofSize2(combination, currentRule, rulePair.first);
+combination = { 0,1 };
+makeNewRulesofSize2(combination, currentRule, rulePair.first);
 					}
 				}
 				else { //rules aB or aa
 					if (newGrammar.mNonTerminals.contains(currentRule[1])) {
-						combination={ 1,0 };
+						combination = { 1,0 };
 						makeNewRulesofSize2(combination, currentRule, rulePair.first);
 					}
 					else {
@@ -726,7 +730,7 @@ CFG CFG::makeChomskyNormalForm() const
 				string groupLexem;
 				unsigned i = 0;
 				Token currentLHS = rulePair.first;
-				do  {
+				do {
 					ruleChain.clear();
 					groupLexem = "<";
 					if (newGrammar.mTerminals.contains(currentRule[i]))
@@ -738,7 +742,7 @@ CFG CFG::makeChomskyNormalForm() const
 					}
 					else
 						newNonTerminal = currentRule[i];
-					for (unsigned j = i+1; j < currentRule.size(); j++) {
+					for (unsigned j = i + 1; j < currentRule.size(); j++) {
 						groupLexem += currentRule[j].mLexem;
 					}
 					groupLexem += ">";
@@ -747,18 +751,19 @@ CFG CFG::makeChomskyNormalForm() const
 					ruleChain.push_back(newNonTerminal); ruleChain.push_back(newGroupNonTerminal);
 					newRules[currentLHS].push_back(ruleChain);
 					currentLHS = newGroupNonTerminal;
-				} while (++i < currentRule.size()-2);
+				} while (++i < currentRule.size() - 2);
 				//case 2 copy_paste :/, idk maybe lambda=func would solve this problem but 
 				//1)i dont care 
 				//2)didn't read 
 				//3)idgaf 
 				//4)i have copy->paste binds
+				//оставил этот коммент для тебя, Евгений)) потому что по итогу написал лямбды 😡
 				Token latestToken = currentRule[currentRule.size() - 1];
 				Token penultToken = currentRule[currentRule.size() - 2];
 				if (newGrammar.mNonTerminals.contains(penultToken)) // rules AB or Ab
 				{
 					if (newGrammar.mNonTerminals.contains(latestToken))
-						newRules[currentLHS].push_back(vector<Token>(currentRule.begin()+i,currentRule.end()));
+						newRules[currentLHS].push_back(vector<Token>(currentRule.begin() + i, currentRule.end()));
 					else {
 						combination = { currentRule.size() - 2,currentRule.size() - 1 };
 						makeNewRulesofSize2(combination, currentRule, currentLHS);
@@ -777,9 +782,103 @@ CFG CFG::makeChomskyNormalForm() const
 				break;
 			}
 		}
-	for (auto&& rulePair : newNonTerminals)
-		newRules[rulePair.first].push_back(rulePair.second);
-	return CFG(move(newGrammar.mNonTerminals),move(newGrammar.mTerminals),move(newRules),move(newGrammar.mAxiom)); // TODO: MAYBE remove chain rules
+		for (auto&& rulePair : newNonTerminals)
+			newRules[rulePair.first].push_back(rulePair.second);
+		return CFG(move(newGrammar.mNonTerminals), move(newGrammar.mTerminals), move(newRules), move(newGrammar.mAxiom)); // TODO: MAYBE remove chain rules
+}
+
+CFG CFG::makeGreibachNormalForm() const
+{
+	//TODO implement Greibach)
+	if (isLanguageEmpty())
+		return emptyLanguage();
+	CFG newGrammar = removeLeftRecursion();
+	vector<Token> orderedTokens(newGrammar.mNonTerminals.begin(),newGrammar.mNonTerminals.end());
+	int startFromTerminalIndex = orderedTokens.size()-1;
+	for (auto& rulePair : newGrammar.mRules) {
+		bool needToOrder = false;
+		for (auto& rule : newGrammar.mRules[rulePair.first])
+			if (newGrammar.mNonTerminals.contains(rule[0])) {
+				int lhsPos;
+				int rhsPos;
+				for (int i = 0; i < orderedTokens.size(); i++) {
+					if (orderedTokens[i] == rulePair.first)
+						lhsPos = i;
+					else if (orderedTokens[i] == rule[0])
+						rhsPos = i;
+				}
+				if (lhsPos > rhsPos)
+					swap(orderedTokens[lhsPos], orderedTokens[rhsPos]);
+				needToOrder = true;
+				break;
+			}
+		if (!needToOrder )iter_swap(find(orderedTokens.begin(), orderedTokens.end(), rulePair.first), 
+			orderedTokens.begin() + startFromTerminalIndex);
+
+	}
+	long i = orderedTokens.size() - 2;
+	ruleDict newRules;
+	newRules[orderedTokens[i + 1]] = newGrammar.mRules[orderedTokens[i + 1]];
+	ruleRHS tempRules;
+	while (i >= 0) {
+		tempRules.clear();
+		for (const auto& currentRule : newGrammar.mRules[orderedTokens[i]]) {
+			bool firstTokenNT = false;
+			long j = i + 1;
+			for (; j < orderedTokens.size() && !firstTokenNT; j++) {
+				if (currentRule[0] == orderedTokens[j]) {
+					firstTokenNT = true;
+				}
+			}
+			j--;
+			if (firstTokenNT) {
+				vector<Token> ruleRHS(currentRule.begin()+1,currentRule.end());
+				for (auto& firstTokenRulesRHS : newRules[orderedTokens[j]]){
+					vector<Token> tempRHS=ruleRHS;
+					tempRHS.insert(tempRHS.begin(), firstTokenRulesRHS.begin(), firstTokenRulesRHS.end());
+					tempRules.push_back(tempRHS);
+				}
+			}
+			else {
+				tempRules.push_back(currentRule);
+			}
+		}
+		newRules[orderedTokens[i]] = tempRules;
+		i--;
+	}
+	set<pair<Token,vector<Token>>> newTerminalRules;
+	for (const auto& rulePair : newRules) {
+		tempRules.clear();
+		for (const auto& currentRule : newRules[rulePair.first]) {
+			if (currentRule.size() > 1) {
+				vector<Token> rightSideOfTerminal(currentRule.begin() + 1, currentRule.end());
+				vector<Token> ruleConstructor; 
+				ruleConstructor.push_back(currentRule[0]);
+				for (auto& token : rightSideOfTerminal) {
+					if (newGrammar.mNonTerminals.contains(token)) {
+						ruleConstructor.push_back(token);
+					}
+					else {
+						Token terminalToken = Token(token.mLexem + "\'", "char");
+						vector<Token> terminalRule;
+						terminalRule.push_back(token);
+						ruleConstructor.push_back(terminalToken);
+						newTerminalRules.insert(make_pair<Token, vector<Token>>(move(terminalToken), move(terminalRule)));
+					}
+				}
+				tempRules.push_back(ruleConstructor);
+			}
+			else {
+				tempRules.push_back(currentRule);
+			}
+		}
+		newRules[rulePair.first] = tempRules;
+	}
+	for (const auto& terminalPair : newTerminalRules) {
+		newGrammar.mNonTerminals.insert(terminalPair.first);
+		newRules[terminalPair.first].push_back(terminalPair.second);
+	}
+	return CFG(move(newGrammar.mNonTerminals), move(newGrammar.mTerminals),move(newRules),move(newGrammar.mAxiom));
 }
 
 set<Token> CFG::getGoodNonTerminals() const 
