@@ -331,7 +331,8 @@ CFG CFG::removeUnreachableSymbols() const
 					for (auto& tkn : rhs)
 						if (mTerminals.contains(tkn))
 							reachableTerminals.insert(tkn);
-						else reachableNonTerminals.insert(tkn);
+						else if (mNonTerminals.contains(tkn))
+							reachableNonTerminals.insert(tkn);
 		}
 	} while (reachableNonTerminals != reachableNonTerminalsTemp);
 	if (reachableTerminals == mTerminals && reachableNonTerminals == mNonTerminals)
