@@ -28,17 +28,24 @@ int main() {
 	chomskyTest2.printCFG();
 	chomskyTest2.makeChomskyNormalForm().printCFG();
 	CFG test(
-		{ "S","A","B" },
-		{ "a","b" },
-		{
-			{"S",{"A","aaa"}},
-			{"A",{"AB","a","BBB"}},
-			{"B",{"b"}},
-		},
-		"S"
-		);
+		{ "D","E","F" },
+		{ "+","*","(",")","a" },
+				{
+				  {"E", {"E*F","F"}},
+				  {"F", {"(D)","a"}},
+				  {"D", {"D+E","E"}}
+				},
+		"D"
+	);
 	test.printCFG();
-	test.removeChainRules().printCFG();
+	test = test.removeChainRules();
+	test.printCFG();
+	test = test.removeUselessSymbols();
+	test.printCFG();
+	test = test.removeLeftRecursion();
+	test.printCFG();
+	test = test.makeGreibachNormalForm();
+	test.printCFG();
 	return 0;
 
 }

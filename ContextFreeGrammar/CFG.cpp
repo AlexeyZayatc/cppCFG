@@ -501,6 +501,7 @@ CFG CFG::removeLambdaRules() const
 	set<Token> finalNonTerminals;
 	for (const auto& pairRule : rulesWithLambdaNonTerminals)
 		finalNonTerminals.insert(pairRule.first);
+	finalNonTerminals.insert(mNonTerminals.begin(), mNonTerminals.end());
 
 	if (lambdaNonTerminals.contains(mAxiom)) {
 		ruleRHS newAxiomRules;
@@ -522,7 +523,7 @@ CFG CFG::removeLeftRecursion() const
 {
 	if (isLanguageEmpty())
 		return emptyLanguage();
-	CFG newGrammar = removeLambdaRules().removeUselessSymbols();//TODO: removeChainRules;
+	CFG newGrammar = removeChainRules().removeUselessSymbols();//TODO: removeChainRules;
 	vector<Token> orderedTokens;
 	//for (auto& nonTerminal : mNonTerminals)
 	//	orderedTokens.push_back(nonTerminal);
@@ -577,26 +578,25 @@ CFG CFG::removeLeftRecursion() const
 			newGrammar.mRules[orderedTokens[i]] = tempRules;
 		} while (j != i - 1);
 	} while (true);
-	return newGrammar.removeUselessSymbols();//TODO: remove chain rules too!
+	return newGrammar; //убрал removeChainRules и removeUselessSymbols
 }
 
 CFG CFG::removeChainRules() const
 {
 	CFG newGrammar = removeLambdaRules();
-	newGrammar.mRules.clear();							// лучше очистить правила новой грамматике, и потом новые присваивать, 
-	map<Token, set<Token>> chainNonTerminalsSets;		// или потом при создании новых правил выделить под это переменную и присвоить ее mRules новой грамматики?
-	for (const auto& firstNonTerminalInSet : mNonTerminals) {
+	map<Token, set<Token>> chainNonTerminalsSets;
+	for (const auto& firstNonTerminalInSet : newGrammar.mNonTerminals) {
 		set<Token> chainNonTerminalsInSet;
 		chainNonTerminalsInSet.insert(firstNonTerminalInSet); // я тупанул, и когда реализовывал на питоне не сделал так, из-за чего там есть лишний код
 		set<Token> chainNonTerminalsInSetTemp(chainNonTerminalsInSet);
 
-		do {  // делаю через цикл, а не через рекурсию, которую сделал на питоне 😎 
+		do {
 			for (auto& chainNonTerminal : chainNonTerminalsInSetTemp) {
-				for (const auto& rule : mRules) {
+				for (const auto& rule : newGrammar.mRules) {
 					if (rule.first == chainNonTerminal) {
 						for (const auto& ruleOutput : rule.second) {
-							if (ruleOutput.size() == 1 && mNonTerminals.find(ruleOutput[0]) != mNonTerminals.end()) { // если в выводе один токен и это нетерминал
-								chainNonTerminalsInSetTemp.insert(*ruleOutput.begin());
+							if (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])) { // если в выводе один токен и это нетерминал
+								chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
 							}
 						}
 					}
@@ -611,7 +611,7 @@ CFG CFG::removeChainRules() const
 			if (!chainNonTerminalsInSetTemp.empty()) {
 				set<Token> setUnion;
 				set_union(chainNonTerminalsInSet.begin(), chainNonTerminalsInSet.end(), chainNonTerminalsInSetTemp.begin(), chainNonTerminalsInSetTemp.end(),
-					std::inserter(setUnion, setUnion.end()));  // все таки решил воспользоваться set_union)
+					std::inserter(setUnion, setUnion.end()));
 				chainNonTerminalsInSet = move(setUnion);
 			}
 		} while (!chainNonTerminalsInSetTemp.empty());
@@ -619,14 +619,15 @@ CFG CFG::removeChainRules() const
 		chainNonTerminalsSets[firstNonTerminalInSet] = chainNonTerminalsInSet;
 	}
 
+	ruleDict newRules;
 	for (const auto& chainNonTerminalsSet : chainNonTerminalsSets) {
 		ruleRHS ruleRHSForChainNonTerminalSet;
 
 		for (const auto& nonTerminal : chainNonTerminalsSet.second) {
-			for (const auto& rule : mRules) {
+			for (const auto& rule : newGrammar.mRules) {
 				if (rule.first == nonTerminal) {
 					for (const auto& ruleOutput : rule.second) {
-						if (!(ruleOutput.size() == 1 && mNonTerminals.find(ruleOutput[0]) != mNonTerminals.end())) {
+						if (!(ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0]))) {
 							ruleRHSForChainNonTerminalSet.push_back(ruleOutput);
 						}
 					}
@@ -634,20 +635,13 @@ CFG CFG::removeChainRules() const
 			}
 		}
 
-		newGrammar.mRules[chainNonTerminalsSet.first] = move(ruleRHSForChainNonTerminalSet); // хз можно ли в loop'е так использовать std::move
+		newRules[chainNonTerminalsSet.first] = move(ruleRHSForChainNonTerminalSet);
 	}
 
+	newGrammar.mRules = move(newRules);
 	newGrammar = newGrammar.removeUnreachableSymbols();
 	newGrammar.mTerminals = mTerminals;
 	return newGrammar;
-}
-
-template <typename T>
-std::set<T> getUnion(const std::set<T>& a, const std::set<T>& b)
-{
-	std::set<T> result = a;
-	result.insert(b.begin(), b.end());
-	return result;
 }
 
 CFG CFG::makeChomskyNormalForm() const

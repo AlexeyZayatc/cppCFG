@@ -151,7 +151,7 @@ public:
 			},
 			"S"
 		);
-		Assert::AreEqual(testCase1,testCase1.removeUnreachableSymbols());
+		Assert::AreEqual(testCase1, testCase1.removeUnreachableSymbols());
 
 	}
 	TEST_METHOD(grammarWithoutTerminalChains) {
@@ -175,9 +175,9 @@ public:
 			},
 			"S"
 		);
-		Assert::AreEqual(testCase2answer,testCase2.removeUnreachableSymbols());
+		Assert::AreEqual(testCase2answer, testCase2.removeUnreachableSymbols());
 	}
-	TEST_METHOD(onlyAxiomRuleWithOnlyNonTerminalsAreReacheable){
+	TEST_METHOD(onlyAxiomRuleWithOnlyNonTerminalsAreReacheable) {
 		CFG testCase3(
 			{ "S", "A", "B", "C" },
 			{ "a", "b", "c" },
@@ -242,11 +242,11 @@ public:
 	}
 	};
 	TEST_CLASS(testRemovingBadNonTerminalsAndRules) {
-	public:
-		TEST_METHOD(allCasesInOneGrammar) {
-			CFG testCase1(
-				{ "S", "A", "B", "C", "D", "E", "F", "G" },
-				{ "a", "b", "c", "d", "e", "f", "g" },
+public:
+	TEST_METHOD(allCasesInOneGrammar) {
+		CFG testCase1(
+			{ "S", "A", "B", "C", "D", "E", "F", "G" },
+			{ "a", "b", "c", "d", "e", "f", "g" },
 				{
 					{"S", {"aAa", "bbBbb", "abcd",""}} ,
 					{"A", {"cCc", "dDd"}} ,
@@ -257,56 +257,56 @@ public:
 					{"G", {"G"}} ,
 					{"F", {"fffAAA"}}
 				},
-				"S"
-			);
-			CFG	testCase1Answer(
-				{ "S", "A", "C", "F" },
-				{ "a", "b", "c", "d", "e", "f", "g" },
+			"S"
+		);
+		CFG	testCase1Answer(
+			{ "S", "A", "C", "F" },
+			{ "a", "b", "c", "d", "e", "f", "g" },
 				{
 					{"S", {"aAa", "abcd",""}} ,
 					{"A", {"cCc"}} ,
 					{"C", {"ccc"}} ,
 					{"F", {"fffAAA"}}
 				},
-				"S"
-			);
-			Assert::AreEqual(testCase1Answer, testCase1.removeBadNonTerminalsAndRules());
-		}
+			"S"
+		);
+		Assert::AreEqual(testCase1Answer, testCase1.removeBadNonTerminalsAndRules());
+	}
 	};
 	TEST_CLASS(testRemoveUselessSymbols) {
-	public:
-		TEST_METHOD(grammarWithoutUselessSymbols) {
-			CFG noUselessSymbols(
-				{ "S" },
-				{ "1", "0" },
+public:
+	TEST_METHOD(grammarWithoutUselessSymbols) {
+		CFG noUselessSymbols(
+			{ "S" },
+			{ "1", "0" },
 				{
 					{"S", {"0", "1", "0S", "1S"}}
 				},
-				"S"
-			);
-			Assert::AreEqual(noUselessSymbols,noUselessSymbols.removeUselessSymbols());
-		}
-		TEST_METHOD(grammarWithOnlyOneGoodRule) {
-			CFG testCase2(
-				{ "S", "A", "B" },
-				{ "a", "b" },
+			"S"
+		);
+		Assert::AreEqual(noUselessSymbols, noUselessSymbols.removeUselessSymbols());
+	}
+	TEST_METHOD(grammarWithOnlyOneGoodRule) {
+		CFG testCase2(
+			{ "S", "A", "B" },
+			{ "a", "b" },
 				{
 					{"S", {"a", "A"}},
 					{"A", {"AB"}},
 					{"B", {"b"} }
 				},
-				"S"
-			);
-			CFG testCase2Answer(
-				{ "S" },
-				{ "a" },
+			"S"
+		);
+		CFG testCase2Answer(
+			{ "S" },
+			{ "a" },
 				{
 					{"S", {"a"} }
 				},
-				"S"
-			);
-			Assert::AreEqual(testCase2Answer, testCase2.removeUselessSymbols());
-		}
+			"S"
+		);
+		Assert::AreEqual(testCase2Answer, testCase2.removeUselessSymbols());
+	}
 	};
 	TEST_CLASS(testRemoveLambdaRules) {
 		TEST_METHOD(grammarWithAxiomLambdaRule) {
@@ -318,7 +318,7 @@ public:
 					{"S", {"aSbS","bSaS",""}},
 				},
 				"S"
-			);
+				);
 			CFG   testCase1Answer(
 				{ "S", "S\'" },
 				{ "a","b" },
@@ -328,7 +328,7 @@ public:
 				},
 				"S\'"
 			);
-			Assert::AreEqual(testCase1Answer,testCase1.removeLambdaRules());
+			Assert::AreEqual(testCase1Answer, testCase1.removeLambdaRules());
 		}
 		TEST_METHOD(lambdaNonTerminalsAreRemovedFromEverything) {
 
@@ -355,7 +355,7 @@ public:
 				},
 				"S"
 			);
-			Assert::AreEqual(testCase2Answer,testCase2.removeLambdaRules());
+			Assert::AreEqual(testCase2Answer, testCase2.removeLambdaRules());
 		}
 		TEST_METHOD(lambdaNonTerminalsHaveTerminalChainRule) {
 			CFG   testCase3(
@@ -411,7 +411,7 @@ public:
 				},
 				"S"
 			);
-			Assert::AreEqual(testCase4Answer,testCase4.removeLambdaRules());
+			Assert::AreEqual(testCase4Answer, testCase4.removeLambdaRules());
 		}
 		TEST_METHOD(grammarHasLambdaNonTerminalsAndLambdaNonTerminalsWithTerminalChain) {
 			CFG   testCase5(
@@ -435,66 +435,12 @@ public:
 				},
 				"S"
 			);
-			Assert::AreEqual(testCase5Answer,testCase5.removeLambdaRules());
+			Assert::AreEqual(testCase5Answer, testCase5.removeLambdaRules());
 		}
 	};
 
-	/*def test_remove_chain_rules(self) :
-	language_empty: CFG = CFG(
-		{ 'S','A','B' },
-		{ 'a','b' },
-		{ 'A' : ['a','ab','B'] , 'B' : ['A','Abb','bbaa'] },
-		'S'
-	)
-		language_empty_answer : CFG = CFG(
-			{ 'S' },
-			{ 'a','b' },
-			{ 'S': [''] },
-			'S'
-		)
-		self.assertEqual(language_empty.remove_chain_rules(), language_empty_answer)
-		cycle_one_step: CFG = CFG(
-			{ 'S', 'A' },
-			{ 'a', 'b' },
-			{ 'S': ['S','Aab'] , 'A' : ['ab','ba'] },
-			'S'
-		)
-		cycle_one_step_answer : CFG = CFG(
-			{ 'S', 'A' },
-			{ 'a', 'b' },
-			{ 'S': ['Aab'] , 'A' : ['ab','ba'] },
-			'S'
-		)
-		self.assertEqual(cycle_one_step.remove_chain_rules(), cycle_one_step_answer)
-		cycle_more_steps: CFG = CFG(
-			{ 'S', 'A', 'B', 'C' },
-			{ 'a', 'b' },
-			{ 'S': ['Bab','Aab'] , 'A' : ['abC','Cba'] , 'B' : ['C','A','ba'] , 'C' : ['A','B','bab'] },
-			'S'
-		)
-		cycle_more_steps_answer : CFG = CFG(
-			{ 'S', 'A', 'B', 'C' },
-			{ 'a', 'b' },
-			{ 'S': ['Bab','Aab'] , 'A' : ['abC','Cba'] , 'B' : ['ba', 'bab','abC','Cba'] , 'C' : ['abC','Cba','ba','bab'] },
-			'S'
-		)
-		self.assertEqual(cycle_more_steps.remove_chain_rules(), cycle_more_steps_answer)
-		useless_non_terminal: CFG = CFG(
-			{ 'A', 'B', 'C' },
-			{ 'a', 'b' },
-			{ 'A': ['Ba','B'] , 'B' : ['C','bab'] },
-			'A'
-		)
-		useless_non_terminal_answer : CFG = CFG(
-			{ 'A', 'B' },
-			{ 'a', 'b' },
-			{ 'A': ['Ba','bab'] , 'B' : ['bab'] },
-			'A'
-		)
-		self.assertEqual(useless_non_terminal.remove_chain_rules(), useless_non_terminal_answer)*/
-
 	TEST_CLASS(testRemoveChainRules) {
-		TEST_METHOD(language_empty) {
+		TEST_METHOD(languageEmpty) {
 			CFG languageEmpty(
 				{ "S","A","B" },
 				{ "a","b" },
@@ -507,7 +453,7 @@ public:
 
 			CFG languageEmptyAnswer(
 				{ "S" },
-				{"a","b"},
+				{ "a","b" },
 				{
 					{ "S",{} }
 				},
@@ -517,18 +463,73 @@ public:
 
 			Assert::AreEqual(languageEmptyAnswer, languageEmpty.removeChainRules());
 		}
-		/*TEST_METHOD(cycle_one_step) {
-
-			Assert::AreEqual(cycle_one_step_answer, cycle_one_step.removeChainRules());
+		TEST_METHOD(cycleOneStep) {
+			CFG cycleOneStep(
+				{ "S", "A" },
+				{ "a", "b" },
+				{
+					{"S", {"S","Aab"}},
+					{"A", {"ab","ba"}}
+				},
+				"S"
+			);
+			CFG cycleOneStepAnswer(
+				{ "S", "A" },
+				{ "a", "b" },
+				{
+					{"S", {"Aab"}},
+					{"A", {"ab","ba"}}
+				},
+				"S"
+			);
+			Assert::AreEqual(cycleOneStepAnswer, cycleOneStep.removeChainRules());
 		}
-		TEST_METHOD(cycle_more_steps) {
-
-			Assert::AreEqual(cycle_more_steps_answer, cycle_more_steps.removeChainRules());
+		TEST_METHOD(cycleMoreSteps) {
+			CFG cycleMoreSteps(
+				{ "S", "A", "B", "C" },
+				{ "a", "b" },
+				{
+					{"S", {"Bab","Aab"}},
+					{"A", {"abC","Cba"}},
+					{"B", {"C","A","ba"}},
+					{"C", {"A","B","bab"}}
+				},
+				"S"
+			);
+			CFG cycleMoreStepsAnswer(
+				{ "S", "A", "B", "C" },
+				{ "a", "b" },
+				{
+					{"S", {"Bab","Aab"}},
+					{"A", {"abC","Cba"}},
+					{"B", {"ba", "bab","abC","Cba"}},
+					{"C", {"abC","Cba","ba","bab"}}
+				},
+				"S"
+			);
+			Assert::AreEqual(cycleMoreStepsAnswer, cycleMoreSteps.removeChainRules());
 		}
-		TEST_METHOD(useless_non_terminal) {
-
-			Assert::AreEqual(useless_non_terminal_answer, useless_non_terminal.removeChainRules());
-		}*/
+		TEST_METHOD(uselessNonTerminal) {
+			CFG uselessNonTerminal(
+				{ "A", "B", "C" },
+				{ "a", "b" },
+				{
+					{"A", {"Ba","B"}},
+					{"B", {"C","bab"}}
+				},
+				"A"
+			);
+			CFG uselessNonTerminalAnswer(
+				{ "A", "B" },
+				{ "a", "b" },
+				{
+					{"A", {"Ba","bab"}},
+					{"B", {"bab"}}
+				},
+				"A"
+			);
+			Assert::AreEqual(uselessNonTerminalAnswer, uselessNonTerminal.removeChainRules());
+		}
 	};
 
 	TEST_CLASS(testRemoveLeftRecursion) {
@@ -563,7 +564,7 @@ public:
 				},
 				"S"
 			);
-			Assert::AreEqual(testCase2Answer,testCase2.removeLeftRecursion());
+			Assert::AreEqual(testCase2Answer, testCase2.removeLeftRecursion());
 		}
 		TEST_METHOD(axiomHasRecursionOtherNonTerminalHasNot) {
 			CFG testCase3(
@@ -576,9 +577,9 @@ public:
 				"A"
 			);
 			CFG testCase3Answer(
-				{"B","A","A\'"},
-				{"c","d"},
-				{ 
+				{ "B","A","A\'" },
+				{ "c","d" },
+				{
 					{"A",{
 						{"B","c"},
 						{"B","c","A\'"}
@@ -592,7 +593,7 @@ public:
 						{"c","d","A\'"}
 				}},
 				},
-				Token("A","char")
+				Token("A", "char")
 			);
 			Assert::AreEqual(testCase3Answer, testCase3.removeLeftRecursion());
 		}
@@ -614,7 +615,7 @@ public:
 				},
 				"S"
 			);
-			Assert::AreEqual(testCase4Answer,testCase4.removeLeftRecursion());
+			Assert::AreEqual(testCase4Answer, testCase4.removeLeftRecursion());
 		}
 		TEST_METHOD(axiomAndNonTerminalHaveLeftRecursionToEachOther) {
 
@@ -677,7 +678,7 @@ public:
 				}},
 				},
 				Token("A", "char")
-			);
+				);
 			Assert::AreEqual(testCase6Answer, testCase6.removeLeftRecursion());
 
 		}
@@ -780,17 +781,29 @@ public:
 				},
 				"D"
 			);
+
+			//Выводит так
+			/*Non - terminals: )' *' D D' E E' F
+			Terminals : () * +a
+				Rules :
+				)' : ) |
+				*' : * |
+				D : (D)' | (D)' * 'F | (D)' * 'FD' | (D)'D' | (D)'E' * 'F | (D)'E'*'FD' | a | a*'F | a * 'FD' | aD' | aE' * 'F | aE' * 'FD' |
+				D' : +E | +ED' |
+				E : (D)' | (D)'E' | a | aE' |
+				E' : *F | *FE' |
+				F : (D)' | a |
+				Axiom : D*/
+			
 			CFG cfgMathAnswer(
-				{ "D","E","F","D\'","E\'",")\'"},
+				{ "D","E","F","D\'","E\'",")\'" },
 				{ "+","*","(",")","a" },
 				{
-			{"D\'",
-				{
-				{"+","E"},
-				{"+","E","D\'"},
+				{"D\'",{
+					{"+","E"},
+					{"+","E","D\'"},
 				}},
-			{"E\'",
-				{
+				{"E\'",{
 					{"*","F"},
 					{"*","F","E\'"}
 				}},
@@ -824,8 +837,8 @@ public:
 		}
 		TEST_METHOD(randomGrammarWIthoutLeftRecursion) {
 			CFG randomGrammar(
-				{"A","B","C"},
-				{"a","b","c"},
+				{ "A","B","C" },
+				{ "a","b","c" },
 				{
 					{"A",{"BC","a"} },
 					{"B",{"CA","ab"}},
@@ -859,7 +872,7 @@ public:
 				}}
 				},
 				Token("A", "char")
-				);
+			);
 			Assert::AreEqual(randomAnswer, randomGrammar.makeGreibachNormalForm());
 		}
 	};
