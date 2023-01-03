@@ -346,7 +346,7 @@ public:
 				"S"
 			);
 			CFG   testCase2Answer(
-				{ "N","K","S" },
+				{ "S","A","B","M","N","K" },
 				{ "a","b" },
 				{
 					{"S", {"KN"}},
@@ -401,7 +401,7 @@ public:
 				"S"
 			);
 			CFG   testCase4Answer(
-				{ "S","M","N","K" },
+				{ "S","A","B","M","N","K" },
 				{ "a","b" },
 				{
 					{"S", {"KN","KNM"}},
@@ -426,7 +426,7 @@ public:
 				"S"
 			);
 			CFG   testCase5Answer(
-				{ "S","A", "M" },
+				{ "S","A","B","M" },
 				{ "c", "k" },
 				{
 					{"S", {"Mk","k"}},
@@ -438,7 +438,6 @@ public:
 			Assert::AreEqual(testCase5Answer, testCase5.removeLambdaRules());
 		}
 	};
-
 	TEST_CLASS(testRemoveChainRules) {
 		TEST_METHOD(languageEmpty) {
 			CFG languageEmpty(
@@ -531,7 +530,6 @@ public:
 			Assert::AreEqual(uselessNonTerminalAnswer, uselessNonTerminal.removeChainRules());
 		}
 	};
-
 	TEST_CLASS(testRemoveLeftRecursion) {
 		TEST_METHOD(noLeftRecursion) {
 			CFG originalGrammar(
@@ -780,23 +778,9 @@ public:
 				  {"D", {"D+E","E"}}
 				},
 				"D"
-			);
-
-			//Выводит так
-			/*Non - terminals: )' *' D D' E E' F
-			Terminals : () * +a
-				Rules :
-				)' : ) |
-				*' : * |
-				D : (D)' | (D)' * 'F | (D)' * 'FD' | (D)'D' | (D)'E' * 'F | (D)'E'*'FD' | a | a*'F | a * 'FD' | aD' | aE' * 'F | aE' * 'FD' |
-				D' : +E | +ED' |
-				E : (D)' | (D)'E' | a | aE' |
-				E' : *F | *FE' |
-				F : (D)' | a |
-				Axiom : D*/
-			
+			);			
 			CFG cfgMathAnswer(
-				{ "D","E","F","D\'","E\'",")\'" },
+				{ "D","E","F","D\'","E\'",")\'","*\'"},
 				{ "+","*","(",")","a" },
 				{
 				{"D\'",{
@@ -819,16 +803,23 @@ public:
 				}},
 				{"D",{
 					{"(","D",")\'"},
-					{"(","D",")\'","E\'"},
+					{"(","D",")\'","*\'","F"},
 					{"(","D",")\'","D\'"},
-					{"(","D",")\'","E\'","D\'"},
+					{"(","D",")\'","*\'","F","D\'"},
+					{"(","D",")\'","E\'","*\'","F"},
+					{"(","D",")\'","E\'","*\'","F","D\'"},
 					{"a"},
-					{"a","E\'"},
+					{"a","*\'","F"},
+					{"a","*\'","F","D\'"},
 					{"a","D\'"},
-					{"a","E\'","D\'"}
+					{"a","E\'","*\'","F"},
+					{"a","E\'","*\'","F","D\'"}
 				}},
 				{")\'",{
 						{")"}
+				}},
+				{"*\'",{
+						{"*"}
 				}}
 				},
 				Token("D", "char")

@@ -406,11 +406,11 @@ void CFG::recursivePushBack(ruleRHS& result,
 	const set<Token>& terminalNT) const 
 {
 	for (unsigned j = adjPoint + 1; j < chain.size(); ++j) {
-		if(!getLambdaNonTerminals().contains(chain[j]))
+		if(!lambdaNT.contains(chain[j]))
 			tempChain.push_back(chain[j]);
 		else {
 			recursivePushBack(result, tempChain, chain, j, lambdaNT, terminalNT);
-			if (getTerminalNTForLambda(getLambdaNonTerminals()).contains(chain[j])) {
+			if (terminalNT.contains(chain[j])) {
 				tempChain.push_back(chain[j]);
 				recursivePushBack(result, tempChain, chain, j, lambdaNT, terminalNT);
 			}
@@ -523,10 +523,8 @@ CFG CFG::removeLeftRecursion() const
 {
 	if (isLanguageEmpty())
 		return emptyLanguage();
-	CFG newGrammar = removeChainRules().removeUselessSymbols();//TODO: removeChainRules;
+	CFG newGrammar = removeChainRules();
 	vector<Token> orderedTokens;
-	//for (auto& nonTerminal : mNonTerminals)
-	//	orderedTokens.push_back(nonTerminal);
 	orderedTokens.assign(newGrammar.mNonTerminals.begin(), newGrammar.mNonTerminals.end());
 	unsigned i, j;
 	i = 0;
@@ -778,12 +776,11 @@ CFG CFG::makeChomskyNormalForm() const
 		}
 		for (auto&& rulePair : newNonTerminals)
 			newRules[rulePair.first].push_back(rulePair.second);
-		return CFG(move(newGrammar.mNonTerminals), move(newGrammar.mTerminals), move(newRules), move(newGrammar.mAxiom)); // TODO: MAYBE remove chain rules
+		return CFG(move(newGrammar.mNonTerminals), move(newGrammar.mTerminals), move(newRules), move(newGrammar.mAxiom));
 }
 
 CFG CFG::makeGreibachNormalForm() const
 {
-	//TODO implement Greibach)
 	if (isLanguageEmpty())
 		return emptyLanguage();
 	CFG newGrammar = removeLeftRecursion();
@@ -899,7 +896,6 @@ set<Token> CFG::getTerminalNTForLambda(const set<Token>& lambdaNT) const
 	set<Token> resultEnd;
 	set<Token> ans;
 	set<Token> goodNonTerminals=getGoodNonTerminals();
-	//res.emplace(goodNonTerminals);
 	do {
 		resultEnd = res;
 		for (const auto& rulePair : mRules) {
