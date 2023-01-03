@@ -30,7 +30,7 @@
 *.exe
 *.out
 *.app
-/.vs/ContextFreeGrammar
+/.vs
 /ContextFreeGrammar/x64/Debug
 /UnitTest/x64/Debug
 /x64/Debug
