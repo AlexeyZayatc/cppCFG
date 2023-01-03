@@ -495,7 +495,7 @@ public:
 
 	TEST_CLASS(testRemoveChainRules) {
 		TEST_METHOD(language_empty) {
-			CFG language_empty(
+			CFG languageEmpty(
 				{ "S","A","B" },
 				{ "a","b" },
 				{
@@ -505,9 +505,9 @@ public:
 				"S"
 			);
 
-			CFG language_empty_answer(
+			CFG languageEmptyAnswer(
 				{ "S" },
-				{ "a","b" },
+				{"a","b"},
 				{
 					{ "S",{} }
 				},
@@ -515,7 +515,7 @@ public:
 			);
 
 
-			Assert::AreEqual(language_empty_answer, language_empty.removeChainRules());
+			Assert::AreEqual(languageEmptyAnswer, languageEmpty.removeChainRules());
 		}
 		/*TEST_METHOD(cycle_one_step) {
 
@@ -784,34 +784,83 @@ public:
 				{ "D","E","F","D\'","E\'",")\'"},
 				{ "+","*","(",")","a" },
 				{
-			{"D",
+			{"D\'",
 				{
-				{"B","A"},
-				{"a'","<AB>"},
+				{"+","E"},
+				{"+","E","D\'"},
 				}},
-			{"A",
+			{"E\'",
 				{
-					{"a"},
-					{"B","<BB>"}
+					{"*","F"},
+					{"*","F","E\'"}
 				}},
-				{"B",{
-					{"b"},
-					{"A","S"}
-				}},
-				{"a'",{
+				{"F",{
+					{"(","D",")\'"},
 					{"a"}
 				}},
-				{"<AB>",{
-					{"A","B"}
+				{"E",{
+					{"(","D",")\'"},
+					{"(","D",")\'","E\'"},
+					{"a"},
+					{"a","E\'"},
 				}},
-				{"<BB>",{
-					{"B","B"}
+				{"D",{
+					{"(","D",")\'"},
+					{"(","D",")\'","E\'"},
+					{"(","D",")\'","D\'"},
+					{"(","D",")\'","E\'","D\'"},
+					{"a"},
+					{"a","E\'"},
+					{"a","D\'"},
+					{"a","E\'","D\'"}
+				}},
+				{")\'",{
+						{")"}
 				}}
-
 				},
 				Token("D", "char")
 			);
-			Assert::AreEqual(cfgMathAnswer, cfgMath);
+			Assert::AreEqual(cfgMathAnswer, cfgMath.makeGreibachNormalForm());
+		}
+		TEST_METHOD(randomGrammarWIthoutLeftRecursion) {
+			CFG randomGrammar(
+				{"A","B","C"},
+				{"a","b","c"},
+				{
+					{"A",{"BC","a"} },
+					{"B",{"CA","ab"}},
+					{"C",{"abcB"}}
+				},
+				"A"
+			);
+			CFG randomAnswer(
+				{ "A","B","C","b\'","c\'" },
+				{ "a","b","c" },
+				{
+			{"A",
+				{
+				{"a","b\'","c\'","B","A","C"},
+				{"a","b\'","C"},
+				{"a"}
+				}},
+			{"B",
+				{
+					{"a","b\'","c\'","B","A"},
+					{"a","b\'"}
+				}},
+				{"C",{
+					{"a","b\'","c\'","B"},
+				}},
+				{"b\'",{
+					{"b"}
+				}},
+				{"c\'",{
+						{"c"}
+				}}
+				},
+				Token("A", "char")
+				);
+			Assert::AreEqual(randomAnswer, randomGrammar.makeGreibachNormalForm());
 		}
 	};
 }

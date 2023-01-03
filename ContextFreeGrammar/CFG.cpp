@@ -708,8 +708,8 @@ CFG CFG::makeChomskyNormalForm() const
 						newRules[rulePair.first].push_back(currentRule);
 					}
 					else {
-combination = { 0,1 };
-makeNewRulesofSize2(combination, currentRule, rulePair.first);
+						combination = { 0,1 };
+						makeNewRulesofSize2(combination, currentRule, rulePair.first);
 					}
 				}
 				else { //rules aB or aa
@@ -794,7 +794,7 @@ CFG CFG::makeGreibachNormalForm() const
 		return emptyLanguage();
 	CFG newGrammar = removeLeftRecursion();
 	vector<Token> orderedTokens(newGrammar.mNonTerminals.begin(),newGrammar.mNonTerminals.end());
-	int startFromTerminalIndex = orderedTokens.size()-1;
+	long long startFromTerminalIndex = orderedTokens.size()-1;
 	for (auto& rulePair : newGrammar.mRules) {
 		bool needToOrder = false;
 		for (auto& rule : newGrammar.mRules[rulePair.first])
@@ -816,7 +816,7 @@ CFG CFG::makeGreibachNormalForm() const
 			orderedTokens.begin() + startFromTerminalIndex);
 
 	}
-	long i = orderedTokens.size() - 2;
+	long long i = orderedTokens.size() - 2;
 	ruleDict newRules;
 	newRules[orderedTokens[i + 1]] = newGrammar.mRules[orderedTokens[i + 1]];
 	ruleRHS tempRules;
@@ -824,7 +824,7 @@ CFG CFG::makeGreibachNormalForm() const
 		tempRules.clear();
 		for (const auto& currentRule : newGrammar.mRules[orderedTokens[i]]) {
 			bool firstTokenNT = false;
-			long j = i + 1;
+			long long j = i + 1;
 			for (; j < orderedTokens.size() && !firstTokenNT; j++) {
 				if (currentRule[0] == orderedTokens[j]) {
 					firstTokenNT = true;
