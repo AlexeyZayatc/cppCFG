@@ -341,7 +341,7 @@ CFG CFG::removeUnreachableSymbols() const
 	for (auto& rulePair : mRules)
 		if (reachableNonTerminals.contains(rulePair.first)) 
 			newRules[rulePair.first] = mRules.at(rulePair.first);
-	return CFG(reachableNonTerminals, reachableTerminals, newRules, mAxiom);
+	return CFG(move(reachableNonTerminals), move(reachableTerminals), move(newRules), mAxiom);
 }
 
 bool CFG::isRuleContainOnlyGoodTokens(
