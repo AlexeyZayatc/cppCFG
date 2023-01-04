@@ -14,10 +14,10 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream)
 			//get new char
 
 		switch (currentState) {
-		case NONE:
+		case State::NONE:
 			//check for char and switch state
 			break;
-		case NUMBER:
+		case State::NUMBER:
 			//check for digits
 			if (*currentChar == ';') {
 				//stop and add two tokens
@@ -27,5 +27,5 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream)
 		}
 	}
 	delete currentChar;
-	return move(tokens);
+	return tokens;
 }

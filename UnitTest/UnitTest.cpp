@@ -2,6 +2,7 @@
 #include "CppUnitTest.h"
 #include "../ContextFreeGrammar/CFG.cpp"
 #include "../ContextFreeGrammar/Exception.cpp"
+#include "../ContextFreeGrammar/Token.cpp"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Microsoft {
 	namespace VisualStudio {

@@ -11,7 +11,7 @@
 using namespace std;
 
 
-static enum State {
+static enum class State {
 	NONE,
 	QUOTE1,
 	QUOTE2,

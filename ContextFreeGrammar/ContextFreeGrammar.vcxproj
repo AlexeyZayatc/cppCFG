@@ -135,12 +135,14 @@
     <ClInclude Include="CFG.h" />
     <ClInclude Include="DFA.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CFG.cpp" />
     <ClCompile Include="DFA.cpp" />
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

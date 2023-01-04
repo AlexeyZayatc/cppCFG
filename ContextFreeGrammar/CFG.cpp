@@ -3,31 +3,6 @@
 #include "CFG.h"
 #include "Exception.h"
 
-Token::Token() : mLexem(""), mLexemType("") {}
-Token::Token(const string& lxm, const string& lxmType) noexcept
-	: mLexem(lxm), mLexemType(lxmType) {}
-Token::Token(const Token& tkn) noexcept
-	: mLexem(tkn.mLexem), mLexemType(tkn.mLexemType) {}
-Token::Token(Token&& tkn) noexcept :
-	mLexem(move(tkn.mLexem)),
-	mLexemType(move(tkn.mLexemType)) {}
-Token& Token::operator=(const Token& other) noexcept {
-	if (this == &other)
-		return *this;
-	mLexem = other.mLexem;
-	mLexemType = other.mLexemType;
-	return *this;
-}
-Token& Token::operator=(Token&& other) noexcept {
-	mLexem = move(other.mLexem);
-	mLexemType = move(other.mLexemType);
-	return *this;
-}
-
-std::ostream& operator <<(std::ostream& ostr, const Token& token) {
-	std::cout << '(' << token.mLexem << ',' << token.mLexemType << ')';
-	return ostr;
-}
 
 CFG::CFG(const set<string>& nonTerminals,
 	const set<string>& terminals,

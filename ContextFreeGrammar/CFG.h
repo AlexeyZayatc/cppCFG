@@ -5,20 +5,11 @@
 #include <set>
 #include <map>
 #include <algorithm>
+
+#include "Token.h"
 using namespace std;
 
-struct Token {
-	Token();
-	Token(const string& lxm, const string& lxmType) noexcept;
-	Token(const Token& tkn) noexcept;
-	Token(Token&& tkn) noexcept;
-	Token& operator=(const Token& other) noexcept;
-	Token& operator=(Token&& other) noexcept;
-	strong_ordering operator<=> (const Token&) const = default;
-	friend ostream& operator <<(ostream& ostr, const Token& token);
-	string mLexem;
-	string mLexemType;
-};
+
 
 typedef vector<vector<Token>> ruleRHS;
 typedef map<Token, ruleRHS> ruleDict;
