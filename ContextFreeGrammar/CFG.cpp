@@ -585,6 +585,9 @@ CFG CFG::removeLeftRecursion() const
 CFG CFG::removeChainRules() const
 {
 	CFG newGrammar = removeLambdaRules();
+	auto hasOneNonTerminal = [&](const vector<Token>& ruleOutput) -> const bool& { return (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])); };
+	auto hasNotOneNonTerminal = [&](const vector<Token>& ruleOutput) -> const bool& { return !(ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])); };
+	
 	map<Token, set<Token>> chainNonTerminalsSets;
 	for (const auto& firstNonTerminalInSet : newGrammar.mNonTerminals) {
 		set<Token> chainNonTerminalsInSet;
@@ -594,15 +597,13 @@ CFG CFG::removeChainRules() const
 			return (rOutput.size() == 1 && newGrammar.mNonTerminals.contains(rOutput[0]));
 		};
 		do {
-			for (auto& chainNonTerminal : chainNonTerminalsInSetTemp) 
-				for (const auto& rule : newGrammar.mRules) 
-					if (rule.first == chainNonTerminal) 
-						for (auto& ruleOutput : rule.second
-							| views::filter(hasChainRule))
-							chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
-						//for (const auto& ruleOutput : rule.second)
-						//	if (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0]))  // если в выводе один токен и это нетерминал
-						//		chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
+			for (const auto& chainNonTerminal : chainNonTerminalsInSetTemp) {
+				for (const auto& ruleOutput : newGrammar.mRules[chainNonTerminal]
+					| views::filter(hasOneNonTerminal)) {
+					chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
+				}
+			}
+			
 			set<Token> setDifference;
 			set_difference(chainNonTerminalsInSetTemp.begin(), chainNonTerminalsInSetTemp.end(), chainNonTerminalsInSet.begin(), chainNonTerminalsInSet.end(),
 				std::inserter(setDifference, setDifference.end()));
@@ -622,17 +623,8 @@ CFG CFG::removeChainRules() const
 	ruleDict newRules;
 	for (const auto& chainNonTerminalsSet : chainNonTerminalsSets) {
 		ruleRHS ruleRHSForChainNonTerminalSet;
-
 		for (const auto& nonTerminal : chainNonTerminalsSet.second) {
-			for (const auto& rule : newGrammar.mRules) {
-				if (rule.first == nonTerminal) {
-					for (const auto& ruleOutput : rule.second) {
-						if (!(ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0]))) {
-							ruleRHSForChainNonTerminalSet.push_back(ruleOutput);
-						}
-					}
-				}
-			}
+			copy_if(newGrammar.mRules[nonTerminal].begin(), newGrammar.mRules[nonTerminal].end(), back_inserter(ruleRHSForChainNonTerminalSet), hasNotOneNonTerminal);
 		}
 
 		newRules[chainNonTerminalsSet.first] = move(ruleRHSForChainNonTerminalSet);
