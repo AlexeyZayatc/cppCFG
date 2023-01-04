@@ -1,4 +1,6 @@
-﻿#include "CFG.h"
+﻿#include <ranges>
+
+#include "CFG.h"
 #include "Exception.h"
 
 Token::Token() : mLexem(""), mLexemType("") {}
@@ -54,7 +56,7 @@ CFG::CFG(const set<string>& nonTerminals,
 		for (auto& rulePair : rulesCopy) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
-			for (auto& curRule : rulesCopy[rulePair.first])
+			for (auto& curRule : rulePair.second)
 				for (unsigned i = 0; i < curRule.size(); i++)
 				{
 					cursubStr = curRule.substr(i, 1);
@@ -122,7 +124,7 @@ CFG::CFG(const set<string>& nonTerminals,
 		for (auto& rulePair : rulesCopy) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
-			for (auto& curRule : rulesCopy[rulePair.first])
+			for (auto& curRule : rulePair.second)
 				for (unsigned i = 0; i < curRule.size(); i++)
 				{
 					if (!nonTerminals.contains(curRule[i]))
@@ -190,7 +192,7 @@ CFG::CFG(const set<Token>& nonTerminals,
 		for (auto& rulePair : rulesCopy) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
-			for (auto& curRule : rulesCopy[rulePair.first])
+			for (auto& curRule : rulePair.second)
 				for (unsigned i = 0; i < curRule.size(); i++)
 				{
 					if (!nonTerminals.contains(curRule[i]))
@@ -339,8 +341,8 @@ CFG CFG::removeUnreachableSymbols() const
 		return CFG(*this);
 	ruleDict newRules;
 	for (auto& rulePair : mRules)
-		if (reachableNonTerminals.contains(rulePair.first)) 
-			newRules[rulePair.first] = mRules.at(rulePair.first);
+		if (reachableNonTerminals.contains(rulePair.first))
+			newRules[rulePair.first] = rulePair.second;
 	return CFG(move(reachableNonTerminals), move(reachableTerminals), move(newRules), mAxiom);
 }
 
@@ -368,7 +370,7 @@ set<Token> CFG::getLambdaNonTerminals() const
 	do {
 		lambdaNonTerminalsTemp = lambdaNonTerminals;
 		for ( const auto& rulePair : mRules) {
-			for (const auto& rhs : mRules.at(rulePair.first)) {
+			for (const auto& rhs : rulePair.second) {
 				if (onlyLambadaNT(rhs))
 					lambdaNonTerminals.insert(rulePair.first);
 				else if (rhs[0].mLexem.empty())
@@ -425,10 +427,10 @@ void CFG::recursivePushBack(ruleRHS& result,
 void CFG::removeDublicateRules(ruleDict& rules) 
 {
 	for (auto& rulePair : rules) {
-		sort(rules[rulePair.first].begin(), rules[rulePair.first].end());
-		rules[rulePair.first].erase(
-			unique(rules[rulePair.first].begin(), rules[rulePair.first].end()),
-				rules[rulePair.first].end());
+		sort(rulePair.second.begin(), rulePair.second.end());
+		rulePair.second.erase(
+			unique(rulePair.second.begin(), rulePair.second.end()),
+			rulePair.second.end());
 	}
 }
 
@@ -454,7 +456,7 @@ CFG CFG::removeLambdaRules() const
 		return false;
 	};
 	for (const auto& rulePair : mRules) {
-		for (const auto& rhs : mRules.at(rulePair.first)) {
+		for (const auto& rhs : rulePair.second) {
 
 			for (const auto& token : rhs) {
 				if (lambdaNonTerminals.contains(token)) {
@@ -493,7 +495,7 @@ CFG CFG::removeLambdaRules() const
 		else rulesWithLambdaNonTerminals.erase(rulePair.first);
 	}
 	for (const auto& rulePair : mRules) {
-		for (const auto& rhs : mRules.at(rulePair.first)) {
+		for (const auto& rhs : rulePair.second) {
 			if (!doesHaveLambda(rhs)) {
 				rulesWithLambdaNonTerminals[rulePair.first].emplace_back(rhs);
 			}
@@ -588,20 +590,20 @@ CFG CFG::removeChainRules() const
 		set<Token> chainNonTerminalsInSet;
 		chainNonTerminalsInSet.insert(firstNonTerminalInSet); // я тупанул, и когда реализовывал на питоне не сделал так, из-за чего там есть лишний код
 		set<Token> chainNonTerminalsInSetTemp(chainNonTerminalsInSet);
-
+		auto hasChainRule = [&](const vector<Token>& rOutput) {
+			return (rOutput.size() == 1 && newGrammar.mNonTerminals.contains(rOutput[0]));
+		};
 		do {
-			for (auto& chainNonTerminal : chainNonTerminalsInSetTemp) {
-				for (const auto& rule : newGrammar.mRules) {
+			for (auto& chainNonTerminal : chainNonTerminalsInSetTemp) 
+				for (const auto& rule : newGrammar.mRules) 
 					if (rule.first == chainNonTerminal) {
-						for (const auto& ruleOutput : rule.second) {
-							if (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])) { // если в выводе один токен и это нетерминал
-								chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
-							}
-						}
+						for (auto& ruleOutput : rule.second
+							| views::filter(hasChainRule))
+							chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
+						//for (const auto& ruleOutput : rule.second)
+						//	if (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0]))  // если в выводе один токен и это нетерминал
+						//		chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
 					}
-				}
-			}
-
 			set<Token> setDifference;
 			set_difference(chainNonTerminalsInSetTemp.begin(), chainNonTerminalsInSetTemp.end(), chainNonTerminalsInSet.begin(), chainNonTerminalsInSet.end(),
 				std::inserter(setDifference, setDifference.end()));
@@ -689,7 +691,7 @@ CFG CFG::makeChomskyNormalForm() const
 			newNonTerminals.insert(make_pair<Token, vector<Token>>(move(secondNT), move(secondRule)));
 	};
 	for (auto& rulePair : newGrammar.mRules)
-		for (auto& currentRule : newGrammar.mRules[rulePair.first]) {
+		for (auto& currentRule : rulePair.second) {
 			switch (currentRule.size()) {
 			case 1:
 				newRules[rulePair.first].push_back(currentRule);
@@ -789,7 +791,7 @@ CFG CFG::makeGreibachNormalForm() const
 	long long startFromTerminalIndex = orderedTokens.size()-1;
 	for (auto& rulePair : newGrammar.mRules) {
 		bool needToOrder = false;
-		for (auto& rule : newGrammar.mRules[rulePair.first])
+		for (auto& rule : rulePair.second)
 			if (newGrammar.mNonTerminals.contains(rule[0])) {
 				int lhsPos;
 				int rhsPos;
@@ -828,7 +830,7 @@ CFG CFG::makeGreibachNormalForm() const
 				for (auto& firstTokenRulesRHS : newRules[orderedTokens[j]]){
 					vector<Token> tempRHS=ruleRHS;
 					tempRHS.insert(tempRHS.begin(), firstTokenRulesRHS.begin(), firstTokenRulesRHS.end());
-					tempRules.push_back(tempRHS);
+					tempRules.push_back(move(tempRHS));
 				}
 			}
 			else {
@@ -841,7 +843,7 @@ CFG CFG::makeGreibachNormalForm() const
 	set<pair<Token,vector<Token>>> newTerminalRules;
 	for (const auto& rulePair : newRules) {
 		tempRules.clear();
-		for (const auto& currentRule : newRules[rulePair.first]) {
+		for (const auto& currentRule : rulePair.second) {
 			if (currentRule.size() > 1) {
 				vector<Token> rightSideOfTerminal(currentRule.begin() + 1, currentRule.end());
 				vector<Token> ruleConstructor; 
@@ -880,7 +882,7 @@ set<Token> CFG::getGoodNonTerminals() const
 	do {
 		goodTokensTemp = goodTokens;
 		for (const auto& rulePair : mRules) {
-			for (const auto& rhs : mRules.at(rulePair.first)) {
+			for (const auto& rhs : rulePair.second) {
 				if (isRuleContainOnlyGoodTokens(rhs, goodTokens)) {
 					goodTokens.insert(rulePair.first);
 					break;
@@ -900,7 +902,7 @@ set<Token> CFG::getTerminalNTForLambda(const set<Token>& lambdaNT) const
 	do {
 		resultEnd = res;
 		for (const auto& rulePair : mRules) {
-			for (const auto& rhs : mRules.at(rulePair.first)) {
+			for (const auto& rhs : rulePair.second) {
 				if (isRuleContainOnlyGoodTokens(rhs, res)) {
 					int terminalsCount = 0;
 					for (const auto& token : rhs) {
