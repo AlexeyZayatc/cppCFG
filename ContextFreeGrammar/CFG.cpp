@@ -593,9 +593,6 @@ CFG CFG::removeChainRules() const
 		set<Token> chainNonTerminalsInSet;
 		chainNonTerminalsInSet.insert(firstNonTerminalInSet); // я тупанул, и когда реализовывал на питоне не сделал так, из-за чего там есть лишний код
 		set<Token> chainNonTerminalsInSetTemp(chainNonTerminalsInSet);
-		auto hasChainRule = [&](const vector<Token>& rOutput) {
-			return (rOutput.size() == 1 && newGrammar.mNonTerminals.contains(rOutput[0]));
-		};
 		do {
 			for (const auto& chainNonTerminal : chainNonTerminalsInSetTemp) {
 				for (const auto& ruleOutput : newGrammar.mRules[chainNonTerminal]
