@@ -132,10 +132,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CFG.h" />
+    <ClInclude Include="DFA.h" />
     <ClInclude Include="Exception.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CFG.cpp" />
+    <ClCompile Include="DFA.cpp" />
     <ClCompile Include="Exception.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
