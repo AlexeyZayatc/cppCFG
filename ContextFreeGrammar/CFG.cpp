@@ -323,7 +323,7 @@ CFG CFG::emptyLanguage() const
 CFG CFG::removeUnreachableSymbols() const
 {
 	set<Token> reachableNonTerminals; reachableNonTerminals.insert(mAxiom);
-	set<Token> reachableNonTerminalsTemp = reachableNonTerminals;
+	set<Token> reachableNonTerminalsTemp;
 	set<Token> reachableTerminals;
 	do {
 		reachableNonTerminalsTemp = reachableNonTerminals;
@@ -455,22 +455,19 @@ CFG CFG::removeLambdaRules() const
 				return true;
 		return false;
 	};
-	for (const auto& rulePair : mRules) {
-		for (const auto& rhs : rulePair.second) {
-
-			for (const auto& token : rhs) {
+	for (const auto& rulePair : mRules) 
+		for (const auto& rhs : rulePair.second) 
+			for (const auto& token : rhs) 
 				if (lambdaNonTerminals.contains(token)) {
 					rulesWithLambdaNonTerminals[rulePair.first].emplace_back(rhs);
 					break;
 				}
-			}
-		}
-	}
+
 	vector<Token> temp;
 	rulesWLNTBuffer = rulesWithLambdaNonTerminals;
 	for (const auto& rulePair : rulesWLNTBuffer) {
 		ruleRHS result;
-		for (const auto& curChain : rulesWithLambdaNonTerminals[rulePair.first]) {
+		for (const auto& curChain : rulePair.second) {
 			temp.clear();
 			if (!onlyLambdaCheck(curChain)) {
 				unsigned i = 0;
@@ -501,10 +498,10 @@ CFG CFG::removeLambdaRules() const
 			}
 		}
 	}
-	set<Token> finalNonTerminals;
-	for (const auto& pairRule : rulesWithLambdaNonTerminals)
-		finalNonTerminals.insert(pairRule.first);
-	finalNonTerminals.insert(mNonTerminals.begin(), mNonTerminals.end());
+	set<Token> finalNonTerminals = mNonTerminals;
+	//for (const auto& pairRule : rulesWithLambdaNonTerminals)
+	//	finalNonTerminals.insert(pairRule.first);
+	//finalNonTerminals.insert(mNonTerminals.begin(), mNonTerminals.end());
 
 	if (lambdaNonTerminals.contains(mAxiom)) {
 		ruleRHS newAxiomRules;
@@ -585,8 +582,8 @@ CFG CFG::removeLeftRecursion() const
 CFG CFG::removeChainRules() const
 {
 	CFG newGrammar = removeLambdaRules();
-	auto hasOneNonTerminal = [&](const vector<Token>& ruleOutput) -> const bool& { return (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])); };
-	auto hasNotOneNonTerminal = [&](const vector<Token>& ruleOutput) -> const bool& { return !(ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])); };
+	auto hasOneNonTerminal = [&](const vector<Token>& ruleOutput) ->  bool { return (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])); };
+	auto hasNotOneNonTerminal = [&](const vector<Token>& ruleOutput) ->  bool { return !(ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0])); };
 	
 	map<Token, set<Token>> chainNonTerminalsSets;
 	for (const auto& firstNonTerminalInSet : newGrammar.mNonTerminals) {
