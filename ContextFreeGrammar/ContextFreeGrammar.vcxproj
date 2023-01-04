@@ -131,6 +131,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CLexerms.h" />
     <ClInclude Include="CFG.h" />
     <ClInclude Include="DFA.h" />
     <ClInclude Include="Exception.h" />
