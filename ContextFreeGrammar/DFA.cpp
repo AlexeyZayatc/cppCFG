@@ -7,20 +7,25 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream)
 {
 	vector<Token> tokens;
 	State currentState = mStart;
-	char currentChar;
+	char* currentChar = new char();
+	currentChar = nullptr;
 	while (fileStream.eof()) {
-		fileStream.get(currentChar);
-		if (currentState == NONE) {
-			//checks to switch state
-		}
+		if(currentChar ==nullptr)
+			//get new char
+
 		switch (currentState) {
+		case NONE:
+			//check for char and switch state
+			break;
 		case NUMBER:
 			//check for digits
-			if (currentChar == ';') {
-				//stop and add two tokens 
+			if (*currentChar == ';') {
+				//stop and add two tokens
+				//also can be + or  ' ' or 
 			}
 			break;
 		}
 	}
+	delete currentChar;
 	return move(tokens);
 }
