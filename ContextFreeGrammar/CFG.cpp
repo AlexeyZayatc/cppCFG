@@ -596,14 +596,13 @@ CFG CFG::removeChainRules() const
 		do {
 			for (auto& chainNonTerminal : chainNonTerminalsInSetTemp) 
 				for (const auto& rule : newGrammar.mRules) 
-					if (rule.first == chainNonTerminal) {
+					if (rule.first == chainNonTerminal) 
 						for (auto& ruleOutput : rule.second
 							| views::filter(hasChainRule))
 							chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
 						//for (const auto& ruleOutput : rule.second)
 						//	if (ruleOutput.size() == 1 && newGrammar.mNonTerminals.contains(ruleOutput[0]))  // если в выводе один токен и это нетерминал
 						//		chainNonTerminalsInSetTemp.insert(ruleOutput[0]);
-					}
 			set<Token> setDifference;
 			set_difference(chainNonTerminalsInSetTemp.begin(), chainNonTerminalsInSetTemp.end(), chainNonTerminalsInSet.begin(), chainNonTerminalsInSet.end(),
 				std::inserter(setDifference, setDifference.end()));

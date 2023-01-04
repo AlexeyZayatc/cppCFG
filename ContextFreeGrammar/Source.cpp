@@ -26,7 +26,7 @@ int main() {
 		"S"
 	);
 	chomskyTest2.printCFG();
-	chomskyTest2.makeChomskyNormalForm().printCFG();
+	//chomskyTest2.makeChomskyNormalForm().printCFG();
 	CFG test(
 		{ "D","E","F" },
 		{ "+","*","(",")","a" },
@@ -37,15 +37,20 @@ int main() {
 				},
 		"D"
 	);
-	test.printCFG();
-	test = test.removeChainRules();
-	test.printCFG();
-	test = test.removeUselessSymbols();
-	test.printCFG();
-	test = test.removeLeftRecursion();
-	test.printCFG();
-	test = test.makeGreibachNormalForm();
-	test.printCFG();
+	CFG   testCase5(
+		{ "S","A","B","M" },
+		{ "c", "k" },
+				{
+					{"S", {"Mk", "","kckc","ckck","Bc","BA"}},
+					{"A", {"c"}},
+					{"B", {""}},
+					{"M", {"AB"}}
+				},
+		"S"
+	);
+	testCase5.removeLambdaRules().printCFG();
+	testCase5.removeLambdaRules().removeChainRules().printCFG();
+	testCase5.removeChainRules().printCFG();
 	return 0;
 
 }
