@@ -10,7 +10,7 @@ int main() {
 	delta rules;
 	makeRules(rules);
 	set<State> endStates;
-	endStates.insert(State::NONE);
+	endStates.insert(State::ENDOFFILE);
 	DFA forC(alphabet, rules, State::NONE,endStates);
 	ifstream simple("simpleProgram.txt", ios::in);
 	vector<Token> programTokens = forC.getTokensFromFile(simple);

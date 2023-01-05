@@ -39,19 +39,23 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 		}
 		return C_PRESENTATION[int(INTNUMBER)];
 	};
-	while (!fileStream.eof()) {
+	while (currentState!=State::ENDOFFILE) {
 		previousState = currentState;
-	    getNextChar();
-		if (currentChar <= 0)
-			break;
-		currentState = mRules.at(currentState).at(currentChar);
+		getNextChar();
+		if (currentChar > 0) {
+			currentState = mRules.at(currentState).at(currentChar);
+		}
+		else {
+			currentState = State::ENDOFFILE;
+		}
+
 		if ((currentState != previousState || currentState == State::SYMBOLS) 
 			&& !lexem.empty())
 			{
 			if (previousState == State::QUOTE1)
-				lexem.push_back('\'');
+				lexem.erase(lexem.begin(), lexem.begin()+1);
 			else if (previousState == State::QUOTE2)
-				lexem.push_back('\"');
+				lexem.erase(lexem.begin(), lexem.begin()+1);
 			string typeOfLexem = getTypeOfLexem(lexem);
 			tokens.push_back(Token(lexem,typeOfLexem,curRow,curColumn));
 			lexem.clear();

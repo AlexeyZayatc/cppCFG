@@ -16,6 +16,7 @@ enum class State {
 	SYMBOLS,
 	NUMBER,
 	IDENTIFIER,
+	ENDOFFILE,
 	ERROR
 };
 

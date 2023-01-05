@@ -19,12 +19,12 @@
  | char*           | type            | 5               | 7               | 
  | str             | id              | 5               | 11              | 
  | =               | set             | 5               | 13              | 
- | "ababab"        | charA           | 5               | 21              | 
+ | ababab          | charA           | 5               | 21              | 
  | ;               | semicolon       | 5               | 23              | 
  | char            | type            | 6               | 6               | 
  | a               | id              | 6               | 8               | 
  | =               | set             | 6               | 10              | 
- | 's'             | char            | 6               | 13              | 
+ | s               | char            | 6               | 13              | 
  | ;               | semicolon       | 6               | 15              | 
  | while           | while           | 7               | 7               | 
  | (               | lrbracket       | 7               | 9               | 
@@ -49,4 +49,5 @@
  | return          | return          | 11              | 8               | 
  | 0               | integer         | 11              | 10              | 
  | ;               | semicolon       | 11              | 11              | 
+ | }               | rcbracket       | 12              | 2               | 
  | EOF             | EOF             | 12              | 2               | 
