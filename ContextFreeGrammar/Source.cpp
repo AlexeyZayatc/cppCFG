@@ -1,56 +1,25 @@
 ﻿#include <iostream>
 #include "CFG.h"
+#include "Token.h"
+#include "DFA.h"
 using namespace std;
 
 int main() {
-	CFG chomskyTest(
-		{"S","A","B"},
-		{"a","b"},
-		{
-			{"S",{"aAB","BA"}},
-			{"A",{"BBB","a"}},
-			{"B",{"AS","b"}}
-		},
-		"S"
-	);/*
-	chomskyTest.printCFG();
-    chomskyTest.makeChomskyNormalForm().printCFG();*/
-	CFG chomskyTest2(
-		{"S","A","B"},
-		{"a","b"},
-		{
-			{"S",{"aA","baaA","AaaA"}},
-			{"A",{"AB","a","BBB"}},
-			{"B",{"bb","BA"}},
-		},
-		"S"
-	);
-	chomskyTest2.printCFG();
-	//chomskyTest2.makeChomskyNormalForm().printCFG();
-	CFG test(
-		{ "D","E","F" },
-		{ "+","*","(",")","a" },
-				{
-				  {"E", {"E*F","F"}},
-				  {"F", {"(D)","a"}},
-				  {"D", {"D+E","E"}}
-				},
-		"D"
-	);
-	CFG   testCase5(
-		{ "S","A","B","M" },
-		{ "c", "k" },
-				{
-					{"S", {"Mk", "","kckc","ckck","Bc","BA"}},
-					{"A", {"c"}},
-					{"B", {""}},
-					{"M", {"AB"}}
-				},
-		"S"
-	);
-	testCase5.removeLambdaRules().printCFG();
-	testCase5.removeLambdaRules().removeChainRules().printCFG();
-	testCase5.removeChainRules().printCFG();
+	
+	set<char> alphabet = getAlphabet();
+	delta rules;
+	makeRules(rules);
+	set<State> endStates;
+	endStates.insert(State::NONE);
+	DFA forC(alphabet, rules, State::NONE,endStates);
+	ifstream simple("simpleProgram.txt", ios::in);
+	vector<Token> programTokens = forC.getTokensFromFile(simple);
+	ofstream output("simpleProgramOutput.txt", ios::out);
+	output <<  " | LEXEM           | TYPE            | ROW             | COLUMN          | \n";
+	for (auto& token : programTokens)
+		output << token << '\n';
+	simple.close();
+	output.close();
 	return 0;
 
 }

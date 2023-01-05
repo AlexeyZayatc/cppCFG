@@ -144,6 +144,10 @@
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Token.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="simpleProgram.txt" />
+    <Text Include="simpleProgramOutput.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

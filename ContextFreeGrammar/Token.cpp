@@ -1,5 +1,5 @@
+#include <iomanip>
 #include "Token.h"
-
 Token::Token() : mLexem(""), mLexemType(""), row(0), column(0) {}
 Token::Token(const string& lxm, const string& lxmType, const size_t& _row, const size_t& _column) noexcept
 	: mLexem(lxm), mLexemType(lxmType), row(_row), column(_column) {}
@@ -28,10 +28,10 @@ Token& Token::operator=(Token&& other) noexcept {
 	return *this;
 }
 std::ostream& operator <<(std::ostream& ostr, const Token& token) {
-	std::cout << " | " << token.mLexem
-		<< " | " << token.mLexemType
-		<< " | " << token.row 
-		<< " | " << token.column 
-		<< " | ";
+	ostr << " | " << std::left<< std::setw(15)<< token.mLexem
+		 << " | "<<std::setw(15) << token.mLexemType
+		 << " | "<<std::setw(15) << token.row
+		 << " | "<<std::setw(15) << token.column
+		 << " | ";
 	return ostr;
 }

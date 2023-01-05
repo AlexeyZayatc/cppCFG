@@ -7,7 +7,7 @@
 
 #include "CFG.h"
 #include "CLexerms.h"
-
+#include "Exception.h"
 using namespace std;
 enum class State {
 	NONE,
@@ -15,7 +15,6 @@ enum class State {
 	QUOTE2,
 	SYMBOLS,
 	NUMBER,
-	FLOATNUMBER,
 	IDENTIFIER,
 	ERROR
 };
@@ -37,3 +36,4 @@ private:
 
 //making rules) idk how to do it better btw
 void makeRules(delta& rls);
+set<char> getAlphabet();
