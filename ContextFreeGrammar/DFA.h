@@ -9,26 +9,25 @@
 #include "CLexerms.h"
 
 using namespace std;
-
-
-static enum class State {
+enum class State {
 	NONE,
 	QUOTE1,
 	QUOTE2,
 	SYMBOLS,
 	NUMBER,
+	FLOATNUMBER,
 	IDENTIFIER,
-	KEYWORD = 5,
-	RESERVEDNAMES = 5
+	ERROR
 };
 
 typedef map<State, map<char, State>> delta;
+
 
 class DFA
 {
 public:
 	DFA(const set<char>& alphabet, const delta& rules, const State& start, const set<State>& endStates);
-	vector<Token> getTokensFromFile(ifstream& fileStream);
+	vector<Token> getTokensFromFile(ifstream& fileStream) const ;
 private:
 	set<char> mAlphabet;
 	delta mRules;
@@ -36,3 +35,5 @@ private:
 	set<State> mEnd;
 };
 
+//making rules) idk how to do it better btw
+void makeRules(delta& rls);

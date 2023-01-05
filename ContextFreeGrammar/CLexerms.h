@@ -2,7 +2,11 @@
 #include <map>
 #include <string>
 using namespace std;
-static const enum c_typeOfLexem {
+//INTNUMBER
+//FLOAT NUMBER
+//EOF
+
+const enum c_typeOfLexem {
 	INTNUMBER, FLOATNUMBER,
 	IDENTIFIER,
 	CHARA, CHAR,
@@ -17,8 +21,8 @@ static const enum c_typeOfLexem {
 	ENDOFFILE
 };
 
-constexpr string_view C_PRESENTATION[] = {
-	"integer","float","id","CHARA","char","if","else","while","for","type","true","false",
+const string C_PRESENTATION[] = {
+	"integer","float","id","charA","char","if","else","while","for","type","true","false",
 	"set","plus","minus","division","multiply","rem","lrbracket","rrbracket","lsbracket","rsbracket",
 	"lcbracket","rcbracket", "comma","less","greater","quote1","quote2","point","semicolon","return",
 	"EOF"
