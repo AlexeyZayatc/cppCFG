@@ -2,10 +2,6 @@
 #include <map>
 #include <string>
 using namespace std;
-//INTNUMBER
-//FLOAT NUMBER
-//EOF
-
 const enum c_typeOfLexem {
 	INTNUMBER, FLOATNUMBER,
 	IDENTIFIER,

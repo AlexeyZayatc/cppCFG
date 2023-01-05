@@ -53,15 +53,21 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 			lexem.push_back(currentChar);		
 		if (currentState == State::ERROR) {
 			cerr << "ERROR";
-			return vector<Token>();
+			throw std::exception();
 		}
 	}
 	return tokens;
 }
 
 void makeRules(delta& rls)
-{
-	map<char, State> forNone = {};
+{ 
+	map<char, State> forNone;
+	map<char, State> forIdentifier;
+	map<char, State> forInteger;
+	map<char, State> forFloat;
+	map<char, State> forQuote1;
+	map<char, State> forQuote2;
+	map<char, State> forSymbols;
 	for (int i = 0; i < 255; i++)
 		forNone[char(i)] = State::ERROR;
 	for (char ch = 'a'; ch <= 'z'; ch++) 
@@ -78,5 +84,5 @@ void makeRules(delta& rls)
 	forNone['\t'] = State::NONE;
 	for (auto& symbPair : C_SYMBOLS)
 		forNone[symbPair.first] = State::SYMBOLS;
-
+	rls[State::NONE] = forNone;
 }
