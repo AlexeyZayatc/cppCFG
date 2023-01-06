@@ -15,20 +15,17 @@ CFG::CFG(const set<string>& nonTerminals,
 		}
 		if (!nonTerminals.contains(axiom))
 			throw Exception("Non-terminals set doesn't have axiom\n");
-		for (auto& nt : nonTerminals)
-			if (nt.empty())
+		if (nonTerminals.contains(""))
 				throw Exception("Non-terminals has lambda string");
-		for (auto& t : terminals)
-			if (t.empty())
+		if (terminals.contains(""))
 				throw Exception("Terminals has lambda string");
 		vector<string> intersection;
 		set_intersection(nonTerminals.begin(), nonTerminals.end(),
 			terminals.begin(), terminals.end(), back_inserter(intersection));
 		if (!intersection.empty())
 			throw Exception("Terminal and Non-terminal sets intersect\n");
-		map<string, vector<string>> rulesCopy = rules;
 		std::string cursubStr;
-		for (auto& rulePair : rulesCopy) {
+		for (auto& rulePair : rules) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
 			for (auto& curRule : rulePair.second)
@@ -46,26 +43,28 @@ CFG::CFG(const set<string>& nonTerminals,
 		mAxiom = Token("S", "char");
 		mNonTerminals.insert(mAxiom);
 		ruleRHS rRHS;
-		vector<Token> temp; temp.push_back(Token("", "char"));
-		rRHS.push_back(temp);
+		vector<Token> temp; temp.emplace_back(Token("", "char"));
+		rRHS.emplace_back(temp);
 		mRules[mAxiom] = rRHS;
 		return;
 	}
-	auto convert = [&](const set<string>& setOfStrings, set<Token>& setOfTokens) {
+	auto convert = [&](const set<string>& setOfStrings) {
+		set<Token> setOfTokens;
 		for (auto&& elem : setOfStrings)
-			setOfTokens.insert(move(Token(elem, "char")));
+			setOfTokens.emplace(elem, "char");
+		return setOfTokens;
 	};
-	convert(nonTerminals, mNonTerminals);
-	convert(terminals, mTerminals);
+	mNonTerminals = convert(nonTerminals);
+	mTerminals = convert(terminals);
 	for (auto&& rule : rules) {
 		auto currentToken = Token(rule.first, "char");
 		auto& vectors = rule.second;
 		vector<Token> temp;
 		for (auto&& vec : vectors) {
 			temp.clear();
-			if (vec.empty()) temp.push_back(Token("", "char"));
+			if (vec.empty()) temp.emplace_back(Token("", "char"));
 			for (unsigned i = 0; i < vec.size(); i++) {
-				temp.push_back(Token(vec.substr(i, 1), "char"));
+				temp.emplace_back(Token(vec.substr(i, 1), "char"));
 			}
 			mRules[currentToken].push_back(temp);
 		}
@@ -84,22 +83,19 @@ CFG::CFG(const set<string>& nonTerminals,
 		}
 		if (!nonTerminals.contains(axiom.mLexem))
 			throw Exception("Non-terminals set doesn't have axiom\n");
-		for (auto& nt : nonTerminals)
-			if (nt.empty())
+		if (nonTerminals.contains(""))
 				throw Exception("Non-terminals has lambda string");
-		for (auto& t : terminals)
-			if (t.empty())
+		if (terminals.contains(""))
 				throw Exception("Terminals has lambda string");
 		vector<string> intersection;
 		set_intersection(nonTerminals.begin(), nonTerminals.end(),
 			terminals.begin(), terminals.end(), back_inserter(intersection));
 		if (!intersection.empty())
 			throw Exception("Terminal and Non-terminal sets intersect\n");
-		map<string, vector<vector<string>>> rulesCopy = rules;
-		for (auto& rulePair : rulesCopy) {
+		for (auto& rulePair : rules) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
-			for (auto& curRule : rulePair.second)
+			for (const auto& curRule : rulePair.second)
 				for (unsigned i = 0; i < curRule.size(); i++)
 				{
 					if (!nonTerminals.contains(curRule[i]))
@@ -113,17 +109,19 @@ CFG::CFG(const set<string>& nonTerminals,
 		mAxiom = Token("S", "char");
 		mNonTerminals.insert(mAxiom);
 		ruleRHS rRHS;
-		vector<Token> temp; temp.push_back(Token("", "char"));
-		rRHS.push_back(temp);
+		vector<Token> temp; temp.emplace_back("", "char");
+		rRHS.emplace_back(temp);
 		mRules[mAxiom] = rRHS;
 		return;
 	}
-	auto convert = [&](const set<string>& setOfStrings, set<Token>& setOfTokens) {
+	auto convert = [&](const set<string>& setOfStrings) {
+		set<Token> setOfTokens;
 		for (auto&& elem : setOfStrings)
-			setOfTokens.insert(move(Token(elem, "char")));
+			setOfTokens.emplace(elem, "char");
+		return setOfTokens;
 	};
-	convert(nonTerminals, mNonTerminals);
-	convert(terminals, mTerminals);
+	mNonTerminals = convert(nonTerminals);
+	mTerminals = convert(terminals);
 	for (auto&& rule : rules) {
 		auto currentToken = Token(rule.first, "char");
 		auto& vectors = rule.second;
@@ -131,9 +129,9 @@ CFG::CFG(const set<string>& nonTerminals,
 		for (auto&& vec : vectors) {
 			temp.clear();
 			for (unsigned i = 0; i < vec.size(); i++) {
-				if(!vec[i].empty()) temp.push_back(Token(vec[i], "char"));
+				if(!vec[i].empty()) temp.emplace_back(Token(vec[i], "char"));
 			}
-			if (temp.empty()) temp.push_back(Token("", "char"));
+			if (temp.empty()) temp.emplace_back(Token("", "char"));
 			mRules[currentToken].push_back(temp);
 		}
 	}
@@ -163,8 +161,7 @@ CFG::CFG(const set<Token>& nonTerminals,
 			terminals.begin(), terminals.end(), back_inserter(intersection));
 		if (!intersection.empty())
 			throw Exception("Terminal and Non-terminal sets intersect\n");
-		ruleDict rulesCopy = rules;
-		for (auto& rulePair : rulesCopy) {
+		for (auto& rulePair : rules) {
 			if (!nonTerminals.contains(rulePair.first))
 				throw Exception("Rules have lhs non-terminal which is not in non-terminal set\n");
 			for (auto& curRule : rulePair.second)
@@ -182,8 +179,8 @@ CFG::CFG(const set<Token>& nonTerminals,
 		mNonTerminals.clear();
 		mNonTerminals.insert(mAxiom);
 		ruleRHS rRHS;
-		vector<Token> temp; temp.push_back(Token("", "char"));
-		rRHS.push_back(temp);
+		vector<Token> temp; temp.emplace_back("", "char");
+		rRHS.emplace_back(temp);
 		mRules.clear();
 		mRules[mAxiom] = rRHS;
 		return;
@@ -197,7 +194,7 @@ CFG::CFG(const set<Token>& nonTerminals,
 			for (unsigned i = 0; i < vec.size(); i++) {
 				if (!vec[i].mLexem.empty()) temp.push_back(vec[i]);
 			}
-			if (temp.empty()) temp.push_back(Token("", "char"));
+			if (temp.empty()) temp.emplace_back("", "char");
 			mRules[currentToken].push_back(temp);
 		}
 	}
@@ -482,9 +479,9 @@ CFG CFG::removeLambdaRules() const
 		ruleRHS newAxiomRules;
 		vector<Token> temp;
 		temp.push_back(mAxiom);
-		newAxiomRules.emplace_back(temp);
+		newAxiomRules.push_back(temp);
 		temp.clear();
-		temp.push_back(Token("", "char"));
+		temp.emplace_back("", "char");
 		newAxiomRules.emplace_back(temp);
 		Token newAxiom(mAxiom.mLexem + '\'', mAxiom.mLexemType);
 		rulesWithLambdaNonTerminals[newAxiom] = newAxiomRules;

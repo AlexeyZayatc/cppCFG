@@ -7,8 +7,7 @@ using namespace std;
 int main() {
 	
 	set<char> alphabet = getAlphabet();
-	delta rules;
-	makeRules(rules);
+	delta rules = makeRules();
 	set<State> endStates;
 	endStates.insert(State::ENDOFFILE);
 	DFA forC(alphabet, rules, State::NONE,endStates);

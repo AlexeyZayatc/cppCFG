@@ -75,8 +75,9 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 	return tokens;
 }
 
-void makeRules(delta& rls)
+delta makeRules()
 {
+	delta rls;
 	map<char, State> forNone;
 	map<char, State> forIdentifier;
 	map<char, State> forInteger;
@@ -149,6 +150,8 @@ void makeRules(delta& rls)
 		forQuote2[char(i)] = State::QUOTE2;
 	forQuote2['\"'] = State::NONE;
 	rls[State::QUOTE2] = forQuote2;
+
+	return rls;
 }
 
 set<char> getAlphabet() {

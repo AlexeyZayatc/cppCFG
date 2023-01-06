@@ -36,5 +36,5 @@ private:
 };
 
 //making rules) idk how to do it better btw
-void makeRules(delta& rls);
+delta makeRules();
 set<char> getAlphabet();

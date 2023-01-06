@@ -1,4 +1,3 @@
- | LEXEM           | TYPE            | ROW             | COLUMN          | 
  | int             | type            | 1               | 4               | 
  | main            | id              | 1               | 9               | 
  | (               | lrbracket       | 1               | 10              | 
@@ -9,45 +8,8 @@
  | =               | set             | 2               | 11              | 
  | 2               | integer         | 2               | 13              | 
  | ;               | semicolon       | 2               | 14              | 
- | float           | type            | 3               | 7               | 
- | anal            | id              | 3               | 12              | 
- | ;               | semicolon       | 3               | 13              | 
- | anal            | id              | 4               | 6               | 
- | =               | set             | 4               | 8               | 
- | 1.5             | float           | 4               | 12              | 
- | ;               | semicolon       | 4               | 13              | 
- | char*           | type            | 5               | 7               | 
- | str             | id              | 5               | 11              | 
- | =               | set             | 5               | 13              | 
- | ababab          | charA           | 5               | 21              | 
- | ;               | semicolon       | 5               | 23              | 
- | char            | type            | 6               | 6               | 
- | a               | id              | 6               | 8               | 
- | =               | set             | 6               | 10              | 
- | s               | char            | 6               | 13              | 
- | ;               | semicolon       | 6               | 15              | 
- | while           | while           | 7               | 7               | 
- | (               | lrbracket       | 7               | 9               | 
- | num             | id              | 7               | 12              | 
- | >               | greater         | 7               | 14              | 
- | 5               | integer         | 7               | 16              | 
- | )               | rrbracket       | 7               | 17              | 
- | {               | lcbracket       | 7               | 18              | 
- | num             | id              | 8               | 6               | 
- | =               | set             | 8               | 7               | 
- | num             | id              | 8               | 10              | 
- | +               | plus            | 8               | 11              | 
- | 5               | integer         | 8               | 12              | 
- | ;               | semicolon       | 8               | 13              | 
- | }               | rcbracket       | 9               | 3               | 
- | anal            | id              | 10              | 6               | 
- | =               | set             | 10              | 7               | 
- | num             | id              | 10              | 10              | 
- | +               | plus            | 10              | 11              | 
- | anal            | id              | 10              | 15              | 
- | ;               | semicolon       | 10              | 16              | 
- | return          | return          | 11              | 8               | 
- | 0               | integer         | 11              | 10              | 
- | ;               | semicolon       | 11              | 11              | 
- | }               | rcbracket       | 12              | 2               | 
- | EOF             | EOF             | 12              | 2               | 
+ | return          | return          | 3               | 8               | 
+ | 0               | integer         | 3               | 10              | 
+ | ;               | semicolon       | 3               | 11              | 
+ | }               | rcbracket       | 4               | 2               | 
+ | EOF             | EOF             | 4               | 2               | 

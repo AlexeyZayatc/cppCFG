@@ -1,12 +1,4 @@
 int main(){
 	int num = 2;
-	float anal;
-	anal = 1.5;
-	char* str = "ababab";
-	char a = 's';
-	while (num > 5){
-		num=num+5;
-	}
-	anal=num+anal;
 	return 0;
 }
