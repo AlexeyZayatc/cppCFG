@@ -11,8 +11,7 @@
 using namespace std;
 enum class State {
 	NONE,
-	QUOTE1,
-	QUOTE2,
+	TEXT,
 	SYMBOLS,
 	NUMBER,
 	IDENTIFIER,

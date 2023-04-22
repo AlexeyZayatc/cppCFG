@@ -3,42 +3,60 @@
 #include <string>
 using namespace std;
 const enum c_typeOfLexem {
-	INTNUMBER, FLOATNUMBER,
+	INTNUMBER, FLOATNUMBER, BOOLEAN,
 	IDENTIFIER,
-	CHARA, CHAR,
-	IF, ELSE,
-	WHILE, FOR,
+	CHAR,
+	IF, ELSE, SWITCH, CASE, DEFAULT,
+	WHILE, FOR, DO,
 	TYPE,
 	TRUE, FALSE,
 	SET, PLUS, MINUS, DIVISION, MULTIPLY, REMAINDER,
 	LRBRACKET, RRBRACKET, LSBRACKET, RSBRACKET, LCBRACKET, RCBRACKET,
-	COMMA, LESS, GREATER, QUOTE1, QUOTE2, DECIMALPOINT, SEMICOLON,
-	RETURN,
+	COMMA, LESS, GREATER,  DECIMALPOINT, SEMICOLON, COLON, OR, AND, NOT,
+	SCANF, PRINTF,
+	BREAK, CONTINUE, RETURN,
 	ENDOFFILE
 };
 
 const string C_PRESENTATION[] = {
-	"integer","float","id","charA","char","if","else","while","for","type","true","false",
-	"set","plus","minus","division","multiply","rem","lrbracket","rrbracket","lsbracket","rsbracket",
-	"lcbracket","rcbracket", "comma","less","greater","quote1","quote2","point","semicolon","return",
+	"integer","float", "bool",
+	"id",
+	"char",
+	"if","else","switch","case", "default",
+	"while","for", "do",
+	"type",
+	"true","false",
+	"set","plus","minus","division","multiply","rem",
+	"lrbracket","rrbracket","lsbracket","rsbracket", "lcbracket","rcbracket", 
+	"comma","less","greater","point","semicolon","colon", "OR", "AND", "NOT",
+	"scanf", "printf",
+	"break","continue","return",
 	"EOF"
 };
 
 static const map<string, c_typeOfLexem> C_KEYWORDS = {
 	{"if", IF},
 	{"else", ELSE},
+	{"do", DO},
 	{"while", WHILE},
 	{"for", FOR},
+	{"break", BREAK},
+	{"continue",CONTINUE},
 	{"return", RETURN},
 	{"float", TYPE},
 	{"int", TYPE},
-	{"char*", TYPE},
 	{"char", TYPE},
+	{"bool", TYPE},
+	{"switch", SWITCH},
+	{"case", CASE},
+	{"default", DEFAULT}
 };
 
 static const map<string, c_typeOfLexem> C_RESERVEDNAMES = {
 	{"true", TRUE},
-	{"false", FALSE}
+	{"false", FALSE},
+	{"scanf", SCANF},
+	{"printf", PRINTF}
 };
 
 static const map<char, c_typeOfLexem> C_SYMBOLS = {
@@ -51,6 +69,7 @@ static const map<char, c_typeOfLexem> C_SYMBOLS = {
 	{'(',LRBRACKET},
 	{')',RRBRACKET},
 	{'[',LSBRACKET},
+	{':', COLON},
 	{']',RSBRACKET},
 	{'{',LCBRACKET},
 	{'}',RCBRACKET},
@@ -58,7 +77,8 @@ static const map<char, c_typeOfLexem> C_SYMBOLS = {
 	{',',COMMA},
 	{'<', LESS},
 	{'>', GREATER},
-	{'\'', QUOTE1},
-	{'\"', QUOTE2},
 	{'.', DECIMALPOINT},
+	{'|', OR},
+	{'&', AND},
+	{'^', NOT}
 };

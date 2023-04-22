@@ -28,10 +28,10 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 		else if (C_KEYWORDS.contains(lxm))
 			return C_PRESENTATION[int(C_KEYWORDS.at(lxm))];
 		else {
-			if (previousState == State::QUOTE1)
-				return C_PRESENTATION[int(CHAR)];
-			if (previousState == State::QUOTE2)
-				return C_PRESENTATION[int(CHARA)];
+			if (previousState == State::TEXT) {
+				if (currentChar=='\'') return C_PRESENTATION[int(CHAR)];
+				return std::string("string");
+			}
 			if ((lxm[0] >= 'a' && lxm[0] <= 'z') || (lxm[0] >= 'A' && lxm[0] <= 'Z'))
 				return C_PRESENTATION[int(IDENTIFIER)];
 			if (lxm.find('.') != string::npos)
@@ -52,10 +52,11 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 		if ((currentState != previousState || currentState == State::SYMBOLS) 
 			&& !lexem.empty())
 			{
-			if (previousState == State::QUOTE1)
-				lexem.erase(lexem.begin(), lexem.begin()+1);
-			else if (previousState == State::QUOTE2)
-				lexem.erase(lexem.begin(), lexem.begin()+1);
+			if (previousState == State::TEXT) {
+				if (lexem.back() == '\\') continue;
+				else lexem.erase(0,1);
+				currentState = State::NONE;
+			}
 			string typeOfLexem = getTypeOfLexem(lexem);
 			tokens.push_back(Token(lexem,typeOfLexem,curRow,curColumn));
 			lexem.clear();
@@ -81,8 +82,7 @@ delta makeRules()
 	map<char, State> forNone;
 	map<char, State> forIdentifier;
 	map<char, State> forInteger;
-	map<char, State> forQuote1;
-	map<char, State> forQuote2;
+	map<char, State> forText;
 	map<char, State> forSymbols;
 	//for NONE state
 	{
@@ -100,8 +100,8 @@ delta makeRules()
 		forNone[' '] = State::NONE;
 		forNone['\n'] = State::NONE;
 		forNone['\t'] = State::NONE;
-		forNone['\''] = State::QUOTE1;
-		forNone['\"'] = State::QUOTE2;
+		forNone['\''] = State::TEXT;
+		forNone['\"'] = State::TEXT;
 		rls[State::NONE] = forNone;
 	}
 	//for identifier state
@@ -116,13 +116,12 @@ delta makeRules()
 			forIdentifier[ch] = State::IDENTIFIER;
 		for (auto& symbPair : C_SYMBOLS)
 			forIdentifier[symbPair.first] = State::SYMBOLS;
-		forIdentifier['*'] = State::IDENTIFIER;
 		forIdentifier['_'] = State::IDENTIFIER;
 		forIdentifier[' '] = State::NONE;
 
 		rls[State::IDENTIFIER] = forIdentifier;
 	}
-	//for Integer
+	//for IntegerAndFloat
 	{
 		for (int i = 0; i < 128; i++)
 			forInteger[char(i)] = State::ERROR;
@@ -140,16 +139,19 @@ delta makeRules()
 		rls[State::SYMBOLS] = forSymbols;
 	}
 
-	//for '
-	for (int i = 0; i < 128; i++)
-		forQuote1[char(i)] = State::QUOTE1;
-	forQuote1['\''] = State::NONE;
-	rls[State::QUOTE1] = forQuote1;
+	//for Text
+	{
+		for (int i = 0; i < 128; i++)
+			forText[char(i)] = State::TEXT;
+		forText['\''] = State::SYMBOLS;
+		forText['\"'] = State::SYMBOLS;
+		rls[State::TEXT] = forText;
+	}
 	//for "
-	for (int i = 0; i < 128; i++)
-		forQuote2[char(i)] = State::QUOTE2;
-	forQuote2['\"'] = State::NONE;
-	rls[State::QUOTE2] = forQuote2;
+	//for (int i = 0; i < 128; i++)
+	//	forQuote2[char(i)] = State::QUOTE2;
+	//forQuote2['\"'] = State::NONE;
+	//rls[State::QUOTE2] = forQuote2;
 
 	return rls;
 }
