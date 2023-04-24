@@ -1,0 +1,9 @@
+if else do   while  for    break  continue     return      float     int      char    bool      switch     case     default     	
+
+
+true
+
+
+false
+		scanf
+	printf

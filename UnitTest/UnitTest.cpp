@@ -886,10 +886,10 @@ public:
 	delta rules = makeRules();
 	set<State> endStates = { State::ENDOFFILE, State::ERROR };
 	DFA forC(alphabet, rules, State::NONE, endStates);
-	ifstream identifiersInput;
+	ifstream inputFile;
 
 	TEST_CLASS(testLexer) {
-		TEST_METHOD(identifiers) {
+		TEST_METHOD(Identifiers) {
 			//Output initialization
 			vector<Token> expectedOutput;
 			{
@@ -927,10 +927,142 @@ public:
 				expectedOutput.push_back(Token("POBEDA", "id", 3, 7));
 				expectedOutput.push_back(Token("EOF", "EOF", 3, 7));
 			}
-			identifiersInput.open("../../UnitTest/LexerTests/IdentifierTests.txt", ios::in);
-			vector<Token> programTokens = forC.getTokensFromFile(identifiersInput);
-			identifiersInput.close();
+			inputFile.open("../../UnitTest/LexerTests/IdentifierTests.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
+			inputFile.close();
 			Assert::AreEqual(expectedOutput, programTokens);
+		}
+		TEST_METHOD(Numbers) {
+			//Output initialization
+			vector<Token> expectedOutput;
+			{
+				expectedOutput.push_back(Token("5", "integer", 1, 2));
+				expectedOutput.push_back(Token("25", "integer", 1, 5));
+				expectedOutput.push_back(Token("365", "integer", 1, 10));
+				expectedOutput.push_back(Token("43242", "integer", 1, 17));
+				expectedOutput.push_back(Token("-", "minus", 1, 20));
+				expectedOutput.push_back(Token("25325", "integer", 1, 25));
+				expectedOutput.push_back(Token("54535", "integer", 1, 32));
+				expectedOutput.push_back(Token("+", "plus", 1, 33));
+				expectedOutput.push_back(Token("5325.4", "float", 1, 41));
+				expectedOutput.push_back(Token("444.4444", "float", 1, 50));
+				expectedOutput.push_back(Token("0.44444", "float", 1, 58));
+				expectedOutput.push_back(Token("5.5", "float", 2, 4));
+				expectedOutput.push_back(Token("4342", "integer", 2, 9));
+				expectedOutput.push_back(Token("-", "minus", 2, 11));
+				expectedOutput.push_back(Token("5325.43242", "float", 2, 21));
+				expectedOutput.push_back(Token("EOF", "EOF", 2, 21));
+			}
+			inputFile.open("../../UnitTest/LexerTests/NumberTests.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
+			inputFile.close();
+			Assert::AreEqual(expectedOutput, programTokens);
+			inputFile.open("../../UnitTest/LexerTests/NumberError.txt", ios::in);
+			auto func = [&] {
+				return forC.getTokensFromFile(inputFile);
+			};
+			Assert::ExpectException<Exception>(func);
+			inputFile.close();
+
+		}
+		TEST_METHOD(KeywordsAndReservedNames) {
+			//Output initialization
+			vector<Token> expectedOutput;
+			{
+				expectedOutput.push_back(Token("if", "if", 1, 3));
+				expectedOutput.push_back(Token("else", "else", 1, 8));
+				expectedOutput.push_back(Token("do", "do", 1, 11));
+				expectedOutput.push_back(Token("while", "while", 1, 19));
+				expectedOutput.push_back(Token("for", "for", 1, 24));
+				expectedOutput.push_back(Token("break", "break", 1, 33));
+				expectedOutput.push_back(Token("continue", "continue", 1, 43));
+				expectedOutput.push_back(Token("return", "return", 1, 54));
+				expectedOutput.push_back(Token("float", "type", 1, 65));
+				expectedOutput.push_back(Token("int", "type", 1, 73));
+				expectedOutput.push_back(Token("char", "type", 1, 83));
+				expectedOutput.push_back(Token("bool", "type", 1, 91));
+				expectedOutput.push_back(Token("switch", "switch", 1, 103));
+				expectedOutput.push_back(Token("case", "case", 1, 112));
+				expectedOutput.push_back(Token("default", "default", 1, 124));
+				expectedOutput.push_back(Token("true", "true", 4, 5));
+				expectedOutput.push_back(Token("false", "false", 7, 6));
+				expectedOutput.push_back(Token("scanf", "scanf", 8, 8));
+				expectedOutput.push_back(Token("printf", "printf", 9, 8));
+				expectedOutput.push_back(Token("EOF", "EOF", 9, 8));
+			}
+			inputFile.open("../../UnitTest/LexerTests/KeywordsAndReservedNamesTests.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
+			inputFile.close();
+			Assert::AreEqual(expectedOutput, programTokens);
+		}
+		TEST_METHOD(Symbols) {
+			//Output initialization
+			vector<Token> expectedOutput;
+			{
+			expectedOutput.push_back(Token("a", "id", 1, 2));
+			expectedOutput.push_back(Token("=", "set", 1, 3));
+			expectedOutput.push_back(Token("5", "integer", 1, 4));
+			expectedOutput.push_back(Token("a", "id", 2, 2));
+			expectedOutput.push_back(Token("+", "plus", 2, 4));
+			expectedOutput.push_back(Token("B", "id", 2, 5));
+			expectedOutput.push_back(Token("d", "id", 3, 2));
+			expectedOutput.push_back(Token("-", "minus", 3, 3));
+			expectedOutput.push_back(Token("5", "integer", 3, 5));
+			expectedOutput.push_back(Token("+", "plus", 3, 8));
+			expectedOutput.push_back(Token("2", "integer", 3, 10));
+			expectedOutput.push_back(Token("*", "multiply", 3, 12));
+			expectedOutput.push_back(Token("/", "division", 3, 14));
+			expectedOutput.push_back(Token("%", "rem", 3, 16));
+			expectedOutput.push_back(Token("(", "lrbracket", 3, 18));
+			expectedOutput.push_back(Token(")", "rrbracket", 3, 20));
+			expectedOutput.push_back(Token("[", "lsbracket", 3, 22));
+			expectedOutput.push_back(Token(":", "colon", 3, 24));
+			expectedOutput.push_back(Token("]", "rsbracket", 3, 26));
+			expectedOutput.push_back(Token("{", "lcbracket", 3, 28));
+			expectedOutput.push_back(Token("}", "rcbracket", 3, 30));
+			expectedOutput.push_back(Token(";", "semicolon", 3, 32));
+			expectedOutput.push_back(Token(",", "comma", 3, 34));
+			expectedOutput.push_back(Token("<", "less", 3, 36));
+			expectedOutput.push_back(Token(">", "greater", 3, 38));
+			expectedOutput.push_back(Token(".", "point", 3, 40));
+			expectedOutput.push_back(Token("|", "OR", 3, 42));
+			expectedOutput.push_back(Token("&", "AND", 4, 2));
+			expectedOutput.push_back(Token("^", "NOT", 4, 4));
+			expectedOutput.push_back(Token("EOF", "EOF", 4, 4));
+			}
+			inputFile.open("../../UnitTest/LexerTests/SymbolsTests.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
+			inputFile.close();
+			Assert::AreEqual(expectedOutput, programTokens);
+		}
+
+		TEST_METHOD(TEXT) {
+			//Output initialization
+			vector<Token> expectedOutput;			
+			{
+				expectedOutput.push_back(Token("sfdsfds", "char", 1, 9));
+				expectedOutput.push_back(Token("fdsfsdfds", "string", 1, 21));
+				expectedOutput.push_back(Token("a", "char", 1, 25));
+				expectedOutput.push_back(Token("fsdfs'", "char", 1, 35));
+				expectedOutput.push_back(Token("fdsfsf\\fsfsf", "string", 1, 52));
+				expectedOutput.push_back(Token("fsdfds\"fsdfds'f","string",2,20));
+				expectedOutput.push_back(Token("a", "string", 2, 24));
+				expectedOutput.push_back(Token("ff\"fsdfds","char",2,37));
+				expectedOutput.push_back(Token("fsdfdsf'fsdfdsfds", "string", 2, 57));
+				expectedOutput.push_back(Token("EOF", "EOF", 2, 58));
+
+			}
+			inputFile.open("../../UnitTest/LexerTests/TextTests.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
+			inputFile.close();
+			Assert::AreEqual(expectedOutput, programTokens);
+
+			inputFile.open("../../UnitTest/LexerTests/EOFTextTests.txt", ios::in);
+			auto func = [&] {
+				return forC.getTokensFromFile(inputFile);
+			};
+			Assert::ExpectException<Exception>(func);
+			inputFile.close();
 		}
 	};
 }

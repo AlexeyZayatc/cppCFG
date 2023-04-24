@@ -12,6 +12,7 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 	int curRow = 1;
 	int curColumn = 0;
 	string lexem;
+	char textOpener=0;
 	auto getNextChar = [&]() {
 		if (currentChar == '\n') {
 			curRow += 1;
@@ -44,16 +45,27 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 		getNextChar();
 		if (currentChar > 0) {
 			currentState = mRules.at(currentState).at(currentChar);
+			if (currentState == State::TEXT && previousState != State::TEXT)
+				textOpener = currentChar;
 		}
 		else {
+			if(previousState==State::TEXT) throw Exception("Error while lexing:\n row: " + to_string(curRow)
+				+ "\n column:" + to_string(curColumn)
+				+ "\n char: " + currentChar);
 			currentState = State::ENDOFFILE;
 		}
-
 		if ((currentState != previousState || currentState == State::SYMBOLS) 
 			&& !lexem.empty())
 			{
 			if (previousState == State::TEXT) {
-				if (lexem.back() == '\\') continue;
+				if (lexem.back() == '\\' || currentChar != textOpener) 
+				{ 
+					if (lexem.back() == '\\')
+						lexem.pop_back();
+					lexem.push_back(currentChar);
+					currentState = State::TEXT;
+					continue;
+				}
 				else lexem.erase(0,1);
 				currentState = State::NONE;
 			}
@@ -147,8 +159,8 @@ delta makeRules()
 	{
 		for (int i = 0; i < 128; i++)
 			forText[char(i)] = State::TEXT;
-		forText['\''] = State::SYMBOLS;
-		forText['\"'] = State::SYMBOLS;
+		forText['\''] = State::NONE;
+		forText['\"'] = State::NONE;
 		rls[State::TEXT] = forText;
 	}
 	//for "

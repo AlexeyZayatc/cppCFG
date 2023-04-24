@@ -11,9 +11,9 @@ int main() {
 	endStates.insert(State::ENDOFFILE);
 	endStates.insert(State::ERROR);
 	DFA forC(alphabet, rules, State::NONE,endStates);
-	ifstream simple("../UnitTest/LexerTests/IdentifierTests.txt", ios::in);
+	ifstream simple("../UnitTest/LexerTests/EOFTextTests.txt", ios::in);
 	vector<Token> programTokens = forC.getTokensFromFile(simple);
-	ofstream output("../UnitTest/LexerTests/IdentifierTestsOutput.txt", ios::out);
+	ofstream output("../UnitTest/LexerTests/EOFTextTestsOutput.txt", ios::out);
 	//output <<  " | LEXEM           | TYPE            | ROW             | COLUMN          | \n";
 	for (auto& token : programTokens)
 		output << "expectedOutput.push_back(Token(\"" << token.mLexem << "\",\""<< token.mLexemType << "\"," << token.row << "," << token.column << "));" << '\n';
