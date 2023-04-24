@@ -32,7 +32,7 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 				if (currentChar=='\'') return C_PRESENTATION[int(CHAR)];
 				return std::string("string");
 			}
-			if ((lxm[0] >= 'a' && lxm[0] <= 'z') || (lxm[0] >= 'A' && lxm[0] <= 'Z'))
+			if ((lxm[0] >= 'a' && lxm[0] <= 'z') || (lxm[0] >= 'A' && lxm[0] <= 'Z') || (lxm[0]=='_'))
 				return C_PRESENTATION[int(IDENTIFIER)];
 			if (lxm.find('.') != string::npos)
 				return C_PRESENTATION[int(FLOATNUMBER)];
@@ -104,6 +104,7 @@ delta makeRules()
 		forNone['\"'] = State::TEXT;
 		rls[State::NONE] = forNone;
 	}
+
 	//for identifier state
 	{
 		for (int i = 0; i < 128; i++)
@@ -118,7 +119,8 @@ delta makeRules()
 			forIdentifier[symbPair.first] = State::SYMBOLS;
 		forIdentifier['_'] = State::IDENTIFIER;
 		forIdentifier[' '] = State::NONE;
-
+		forIdentifier['\n'] = State::NONE;
+		forIdentifier['\t'] = State::NONE;
 		rls[State::IDENTIFIER] = forIdentifier;
 	}
 	//for IntegerAndFloat
@@ -131,6 +133,8 @@ delta makeRules()
 			forInteger[symbPair.first] = State::SYMBOLS;
 		forInteger['.'] = State::NUMBER;
 		forInteger[' '] = State::NONE;
+		forInteger['\n'] = State::NONE;
+		forInteger['\t'] = State::NONE;
 		rls[State::NUMBER] = forInteger;
 	}
 	//for Symbol

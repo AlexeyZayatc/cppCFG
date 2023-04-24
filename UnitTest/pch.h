@@ -9,4 +9,5 @@
 
 // Добавьте сюда заголовочные файлы для предварительной компиляции
 #include "../ContextFreeGrammar/CFG.h"
+#include "../ContextFreeGrammar/DFA.h"
 #endif //PCH_H

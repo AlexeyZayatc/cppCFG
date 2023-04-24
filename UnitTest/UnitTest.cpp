@@ -3,6 +3,7 @@
 #include "../ContextFreeGrammar/CFG.cpp"
 #include "../ContextFreeGrammar/Exception.cpp"
 #include "../ContextFreeGrammar/Token.cpp"
+#include "../ContextFreeGrammar/DFA.cpp"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Microsoft {
 	namespace VisualStudio {
@@ -13,6 +14,18 @@ namespace Microsoft {
 				return cfg.toWString();
 			}
 
+			template<>
+			static std::wstring ToString<Token>(const Token& tkn) {
+				return tkn.toWString();
+			}
+
+			template<>
+			static std::wstring ToString<vector<Token>>(const vector<Token>& vt) {
+				wstring result = L"";
+				for (const auto& tk : vt)
+					result += tk.toWString() + L"\n";
+				return result;
+			}
 		}
 	}
 }
@@ -866,6 +879,58 @@ public:
 				Token("A", "char")
 			);
 			Assert::AreEqual(randomAnswer, randomGrammar.makeGreibachNormalForm());
+		}
+	};
+	//LEXER
+	set<char> alphabet = getAlphabet();
+	delta rules = makeRules();
+	set<State> endStates = { State::ENDOFFILE, State::ERROR };
+	DFA forC(alphabet, rules, State::NONE, endStates);
+	ifstream identifiersInput;
+
+	TEST_CLASS(testLexer) {
+		TEST_METHOD(identifiers) {
+			//Output initialization
+			vector<Token> expectedOutput;
+			{
+				expectedOutput.push_back(Token("abc", "id", 1, 4));
+				expectedOutput.push_back(Token("aBc", "id", 1, 8));
+				expectedOutput.push_back(Token("abC", "id", 1, 12));
+				expectedOutput.push_back(Token("aBC", "id", 1, 16));
+				expectedOutput.push_back(Token("Bac", "id", 1, 20));
+				expectedOutput.push_back(Token("BaC", "id", 1, 24));
+				expectedOutput.push_back(Token("BAc", "id", 1, 28));
+				expectedOutput.push_back(Token("BAC", "id", 1, 32));
+				expectedOutput.push_back(Token("a0a", "id", 1, 36));
+				expectedOutput.push_back(Token("A00", "id", 1, 40));
+				expectedOutput.push_back(Token("a00", "id", 1, 44));
+				expectedOutput.push_back(Token("A0A", "id", 1, 48));
+				expectedOutput.push_back(Token("_A_", "id", 1, 52));
+				expectedOutput.push_back(Token("_Ab", "id", 1, 56));
+				expectedOutput.push_back(Token("_A0", "id", 1, 60));
+				expectedOutput.push_back(Token("_a_", "id", 1, 64));
+				expectedOutput.push_back(Token("_ab", "id", 1, 68));
+				expectedOutput.push_back(Token("_a0", "id", 1, 72));
+				expectedOutput.push_back(Token("b_", "id", 1, 75));
+				expectedOutput.push_back(Token("sab", "id", 2, 4));
+				expectedOutput.push_back(Token("bec", "id", 2, 8));
+				expectedOutput.push_back(Token("_fds_sf_", "id", 2, 17));
+				expectedOutput.push_back(Token("fsdf_dsf", "id", 2, 26));
+				expectedOutput.push_back(Token("+", "plus", 2, 28));
+				expectedOutput.push_back(Token("Z", "id", 2, 29));
+				expectedOutput.push_back(Token("V", "id", 2, 31));
+				expectedOutput.push_back(Token("+", "plus", 2, 32));
+				expectedOutput.push_back(Token("+", "plus", 2, 34));
+				expectedOutput.push_back(Token("Z", "id", 2, 36));
+				expectedOutput.push_back(Token("V", "id", 2, 38));
+				expectedOutput.push_back(Token("+", "plus", 2, 40));
+				expectedOutput.push_back(Token("POBEDA", "id", 3, 7));
+				expectedOutput.push_back(Token("EOF", "EOF", 3, 7));
+			}
+			identifiersInput.open("../../UnitTest/LexerTests/IdentifierTests.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(identifiersInput);
+			identifiersInput.close();
+			Assert::AreEqual(expectedOutput, programTokens);
 		}
 	};
 }

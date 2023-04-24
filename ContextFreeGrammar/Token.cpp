@@ -27,6 +27,17 @@ Token& Token::operator=(Token&& other) noexcept {
 	column = move(other.column);
 	return *this;
 }
+wstring Token::toWString() const
+{
+	wstring result = L"";
+	result += wstring(mLexem.begin(),mLexem.end())+L" ";
+	result += wstring(mLexemType.begin(), mLexemType.end()) + L" ";
+	std::string rw = std::to_string(row);
+	result += wstring(rw.begin(), rw.end()) + L" ";
+	std::string clmn = std::to_string(column);
+	result += wstring(clmn.begin(),clmn.end());
+	return result;
+}
 std::ostream& operator <<(std::ostream& ostr, const Token& token) {
 	ostr << " | " << std::left<< std::setw(15)<< token.mLexem
 		 << " | "<<std::setw(15) << token.mLexemType

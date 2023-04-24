@@ -11,6 +11,7 @@ struct Token {
 	Token& operator=(Token&& other) noexcept;
 	strong_ordering operator<=> (const Token&) const = default;
 	friend ostream& operator <<(ostream& ostr, const Token& token);
+	wstring toWString() const;
 	string mLexem;
 	string mLexemType;
 	size_t row;
