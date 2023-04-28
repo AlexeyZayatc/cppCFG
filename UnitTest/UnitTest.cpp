@@ -3,7 +3,7 @@
 #include "../ContextFreeGrammar/CFG.cpp"
 #include "../ContextFreeGrammar/Exception.cpp"
 #include "../ContextFreeGrammar/Token.cpp"
-#include "../ContextFreeGrammar/DFA.cpp"
+#include "../ContextFreeGrammar/Lexer.cpp"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Microsoft {
 	namespace VisualStudio {
@@ -881,11 +881,9 @@ public:
 			Assert::AreEqual(randomAnswer, randomGrammar.makeGreibachNormalForm());
 		}
 	};
+
 	//LEXER
-	set<char> alphabet = getAlphabet();
-	delta rules = makeRules();
-	set<State> endStates = { State::ENDOFFILE, State::ERROR };
-	DFA forC(alphabet, rules, State::NONE, endStates);
+	Lexer forC;
 	ifstream inputFile;
 
 	TEST_CLASS(testLexer) {
@@ -1036,16 +1034,16 @@ public:
 			Assert::AreEqual(expectedOutput, programTokens);
 		}
 
-		TEST_METHOD(TEXT) {
+		TEST_METHOD(Text) {
 			//Output initialization
 			vector<Token> expectedOutput;			
 			{
 				expectedOutput.push_back(Token("sfdsfds", "char", 1, 9));
 				expectedOutput.push_back(Token("fdsfsdfds", "string", 1, 21));
 				expectedOutput.push_back(Token("a", "char", 1, 25));
-				expectedOutput.push_back(Token("fsdfs'", "char", 1, 35));
+				expectedOutput.push_back(Token("fsdfs\\'", "char", 1, 35));
 				expectedOutput.push_back(Token("fdsfsf\\fsfsf", "string", 1, 52));
-				expectedOutput.push_back(Token("fsdfds\"fsdfds'f","string",2,20));
+				expectedOutput.push_back(Token("fsdfds\\\"fsdfds\\'f","string",2,20));
 				expectedOutput.push_back(Token("a", "string", 2, 24));
 				expectedOutput.push_back(Token("ff\"fsdfds","char",2,37));
 				expectedOutput.push_back(Token("fsdfdsf'fsdfdsfds", "string", 2, 57));
