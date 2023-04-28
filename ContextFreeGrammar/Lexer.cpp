@@ -1,9 +1,10 @@
-#include "DFA.h"
+#include "Lexer.h"
 
-DFA::DFA(const set<char>& alphabet, const delta& rules, const State& start, const set<State>& endStates)
-	: mAlphabet(alphabet), mRules(rules), mStart(start), mEnd(endStates) {}
+Lexer::Lexer()
+	: mTransitionMap(makeTransitions()),
+	  mStart(State::NONE) {}
 
-vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
+vector<Token> Lexer::getTokensFromFile(ifstream& fileStream) const
 {
 	vector<Token> tokens;
 	State currentState = mStart;
@@ -13,38 +14,45 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 	int curColumn = 0;
 	string lexem;
 	char textOpener=0;
+
 	auto getNextChar = [&]() {
 		if (currentChar == '\n') {
 			curRow += 1;
 			curColumn = 0;
 		}
-		currentChar = fileStream.get();
 		curColumn += 1;
+		return fileStream.get();
 	};
+
+	auto getNextState = [&]() {
+		return mTransitionMap.at(previousState).at(currentChar);
+	};
+
 	auto getTypeOfLexem = [&](const string& lxm) {
 		if (lxm.size() == 1 && (C_SYMBOLS.contains(lxm[0])))
-			return C_PRESENTATION[int(C_SYMBOLS.at(lxm[0]))];
+			return (C_SYMBOLS.at(lxm[0]));
 		else if (C_RESERVEDNAMES.contains(lxm))
-			return C_PRESENTATION[int(C_RESERVEDNAMES.at(lxm))];
+			return (C_RESERVEDNAMES.at(lxm));
 		else if (C_KEYWORDS.contains(lxm))
-			return C_PRESENTATION[int(C_KEYWORDS.at(lxm))];
+			return (C_KEYWORDS.at(lxm));
 		else {
 			if (previousState == State::TEXT) {
-				if (currentChar=='\'') return C_PRESENTATION[int(CHAR)];
-				return std::string("string");
+				if (currentChar=='\'') return (CHAR);
+				return STRING;
 			}
 			if ((lxm[0] >= 'a' && lxm[0] <= 'z') || (lxm[0] >= 'A' && lxm[0] <= 'Z') || (lxm[0]=='_'))
-				return C_PRESENTATION[int(IDENTIFIER)];
+				return (IDENTIFIER);
 			if (lxm.find('.') != string::npos)
-				return C_PRESENTATION[int(FLOATNUMBER)];
+				return (FLOATNUMBER);
 		}
-		return C_PRESENTATION[int(INTNUMBER)];
+		return (INTNUMBER);
 	};
+
 	while (currentState!=State::ENDOFFILE) {
 		previousState = currentState;
-		getNextChar();
+		currentChar = getNextChar();
 		if (currentChar > 0) {
-			currentState = mRules.at(currentState).at(currentChar);
+			currentState = getNextState();
 			if (currentState == State::TEXT && previousState != State::TEXT)
 				textOpener = currentChar;
 		}
@@ -59,9 +67,7 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 			{
 			if (previousState == State::TEXT) {
 				if (lexem.back() == '\\' || currentChar != textOpener) 
-				{ 
-					if (lexem.back() == '\\')
-						lexem.pop_back();
+				{
 					lexem.push_back(currentChar);
 					currentState = State::TEXT;
 					continue;
@@ -69,7 +75,7 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 				else lexem.erase(0,1);
 				currentState = State::NONE;
 			}
-			string typeOfLexem = getTypeOfLexem(lexem);
+			string typeOfLexem = C_PRESENTATION[getTypeOfLexem(lexem)];
 			tokens.push_back(Token(lexem,typeOfLexem,curRow,curColumn));
 			lexem.clear();
 		}
@@ -78,28 +84,36 @@ vector<Token> DFA::getTokensFromFile(ifstream& fileStream) const
 		else
 			lexem.push_back(currentChar);		
 		if (currentState == State::ERROR) {
-			throw Exception("Error while lexing:\n row: "+to_string(curRow)
-				+"\n column:" + to_string(curColumn)
+			throw Exception("Error while lexing:\n row: " + to_string(curRow)
+				+ "\n column:" + to_string(curColumn)
 				+ "\n char: " + currentChar);
 		}
 	}
-	Token endOfFile("EOF", C_PRESENTATION[(int)ENDOFFILE], curRow, curColumn);
+	Token endOfFile("EOF", C_PRESENTATION[ENDOFFILE], curRow, curColumn);
 	tokens.push_back(endOfFile);
 	return tokens;
 }
 
-delta makeRules()
+transitionMap Lexer::makeTransitions()
 {
-	delta rls;
+	transitionMap transitions;
 	map<char, State> forNone;
 	map<char, State> forIdentifier;
-	map<char, State> forInteger;
+	map<char, State> forNumber;
 	map<char, State> forText;
 	map<char, State> forSymbols;
-	//for NONE state
+
+	//initialization of forStates
+	for (int i = 0; i < 128; i++)
 	{
-		for (int i = 0; i < 128; i++)
-			forNone[char(i)] = State::ERROR;
+		forNone[char(i)] = State::ERROR;
+		forIdentifier[char(i)] = State::ERROR;
+		forNumber[char(i)] = State::ERROR;
+		forText[char(i)] = State::TEXT;
+	}
+
+	//transitions for NONE state
+	{
 		for (char ch = 'a'; ch <= 'z'; ch++)
 			forNone[ch] = State::IDENTIFIER;
 		for (char ch = 'A'; ch <= 'Z'; ch++)
@@ -114,13 +128,11 @@ delta makeRules()
 		forNone['\t'] = State::NONE;
 		forNone['\''] = State::TEXT;
 		forNone['\"'] = State::TEXT;
-		rls[State::NONE] = forNone;
+		transitions[State::NONE] = forNone;
 	}
 
-	//for identifier state
+	//transitions for Identifier state
 	{
-		for (int i = 0; i < 128; i++)
-			forIdentifier[char(i)] = State::ERROR;
 		for (char ch = 'a'; ch <= 'z'; ch++)
 			forIdentifier[ch] = State::IDENTIFIER;
 		for (char ch = 'A'; ch <= 'Z'; ch++)
@@ -133,48 +145,33 @@ delta makeRules()
 		forIdentifier[' '] = State::NONE;
 		forIdentifier['\n'] = State::NONE;
 		forIdentifier['\t'] = State::NONE;
-		rls[State::IDENTIFIER] = forIdentifier;
+		transitions[State::IDENTIFIER] = forIdentifier;
 	}
-	//for IntegerAndFloat
+	//transitions for Number state
 	{
-		for (int i = 0; i < 128; i++)
-			forInteger[char(i)] = State::ERROR;
 		for (char ch = '0'; ch <= '9'; ch++)
-			forInteger[ch] = State::NUMBER;
+			forNumber[ch] = State::NUMBER;
 		for (auto& symbPair : C_SYMBOLS)
-			forInteger[symbPair.first] = State::SYMBOLS;
-		forInteger['.'] = State::NUMBER;
-		forInteger[' '] = State::NONE;
-		forInteger['\n'] = State::NONE;
-		forInteger['\t'] = State::NONE;
-		rls[State::NUMBER] = forInteger;
+			forNumber[symbPair.first] = State::SYMBOLS;
+		forNumber['.'] = State::NUMBER;
+		forNumber[' '] = State::NONE;
+		forNumber['\n'] = State::NONE;
+		forNumber['\t'] = State::NONE;
+		transitions[State::NUMBER] = forNumber;
 	}
-	//for Symbol
+	//transitions for Symbol state
 	{
 		forSymbols = forNone;
-		rls[State::SYMBOLS] = forSymbols;
+		transitions[State::SYMBOLS] = forSymbols;
 	}
 
-	//for Text
+	//transitions for Text state
 	{
-		for (int i = 0; i < 128; i++)
-			forText[char(i)] = State::TEXT;
 		forText['\''] = State::NONE;
 		forText['\"'] = State::NONE;
-		rls[State::TEXT] = forText;
+		transitions[State::TEXT] = forText;
 	}
-	//for "
-	//for (int i = 0; i < 128; i++)
-	//	forQuote2[char(i)] = State::QUOTE2;
-	//forQuote2['\"'] = State::NONE;
-	//rls[State::QUOTE2] = forQuote2;
 
-	return rls;
+	return transitions;
 }
 
-set<char> getAlphabet() {
-	set<char> result;
-	for (int i = 0; i < 128; i++)
-		result.insert(char(i));
-	return result;
-}

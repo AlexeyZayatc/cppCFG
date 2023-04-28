@@ -34,6 +34,8 @@
 /ContextFreeGrammar/x64/Debug
 /UnitTest/x64/Debug
 /x64/Debug
+/ContextFreeGrammar/Debug
+/Debug
 /UnitTest/x64/Release
 /x64/Release
 /ContextFreeGrammar/x64/Release

@@ -21,10 +21,10 @@
     <ClInclude Include="Exception.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="DFA.h">
+    <ClInclude Include="Lexer.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
-    <ClInclude Include="CLexerms.h">
+    <ClInclude Include="CLexems.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
     <ClInclude Include="Token.h">
@@ -41,7 +41,7 @@
     <ClCompile Include="Exception.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="DFA.cpp">
+    <ClCompile Include="Lexer.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
     <ClCompile Include="Token.cpp">

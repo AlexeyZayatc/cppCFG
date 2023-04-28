@@ -6,7 +6,7 @@
 #include <streambuf>
 
 #include "CFG.h"
-#include "CLexerms.h"
+#include "CLexems.h"
 #include "Exception.h"
 using namespace std;
 enum class State {
@@ -19,21 +19,18 @@ enum class State {
 	ERROR
 };
 
-typedef map<State, map<char, State>> delta;
+typedef map<State, map<char, State>> transitionMap;
 
 
-class DFA
+class Lexer
 {
 public:
-	DFA(const set<char>& alphabet, const delta& rules, const State& start, const set<State>& endStates);
+	Lexer();
 	vector<Token> getTokensFromFile(ifstream& fileStream) const ;
 private:
-	set<char> mAlphabet;
-	delta mRules;
+	transitionMap mTransitionMap;
 	State mStart;
-	set<State> mEnd;
-};
 
-//making rules) idk how to do it better btw
-delta makeRules();
-set<char> getAlphabet();
+	//making rules) idk how to do it better btw
+	transitionMap makeTransitions();
+};

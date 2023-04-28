@@ -3,9 +3,9 @@
 #include <string>
 using namespace std;
 const enum c_typeOfLexem {
-	INTNUMBER, FLOATNUMBER, BOOLEAN,
+	INTNUMBER, FLOATNUMBER,
 	IDENTIFIER,
-	CHAR,
+	CHAR, STRING,
 	IF, ELSE, SWITCH, CASE, DEFAULT,
 	WHILE, FOR, DO,
 	TYPE,
@@ -19,9 +19,9 @@ const enum c_typeOfLexem {
 };
 
 const string C_PRESENTATION[] = {
-	"integer","float", "bool",
+	"integer","float",
 	"id",
-	"char",
+	"char", "string",
 	"if","else","switch","case", "default",
 	"while","for", "do",
 	"type",
