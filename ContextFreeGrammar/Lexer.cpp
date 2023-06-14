@@ -29,8 +29,8 @@ vector<Token> Lexer::getTokensFromFile(ifstream& fileStream) const
 	};
 
 	auto getTypeOfLexem = [&](const string& lxm) {
-		if (lxm.size() == 1 && (C_SYMBOLS.contains(lxm[0])))
-			return (C_SYMBOLS.at(lxm[0]));
+		if ((C_SYMBOLS.contains(lxm)))
+			return (C_SYMBOLS.at(lxm));
 		else if (C_RESERVEDNAMES.contains(lxm))
 			return (C_RESERVEDNAMES.at(lxm));
 		else if (C_KEYWORDS.contains(lxm))
@@ -75,6 +75,12 @@ vector<Token> Lexer::getTokensFromFile(ifstream& fileStream) const
 				else lexem.erase(0,1);
 				currentState = State::NONE;
 			}
+			else if (previousState == State::DOUBLESYMBOL) {
+				if (!C_SYMBOLS.contains(lexem))
+					throw Exception("Error while lexing:\n row: " + to_string(curRow)
+						+ "\n column:" + to_string(curColumn)
+						+ "\n char: " + currentChar);
+			}
 			string typeOfLexem = C_PRESENTATION[getTypeOfLexem(lexem)];
 			tokens.push_back(Token(lexem,typeOfLexem,curRow,curColumn));
 			lexem.clear();
@@ -102,7 +108,7 @@ transitionMap Lexer::makeTransitions()
 	map<char, State> forNumber;
 	map<char, State> forText;
 	map<char, State> forSymbols;
-
+	map<char, State> forDSymbols;
 	//initialization of forStates
 	for (int i = 0; i < 128; i++)
 	{
@@ -122,7 +128,13 @@ transitionMap Lexer::makeTransitions()
 		for (char ch = '0'; ch <= '9'; ch++)
 			forNone[ch] = State::NUMBER;
 		for (auto& symbPair : C_SYMBOLS)
-			forNone[symbPair.first] = State::SYMBOLS;
+			forNone[symbPair.first[0]] = State::SYMBOLS;
+		forNone['|'] = State::DOUBLESYMBOL;
+		forNone['&'] = State::DOUBLESYMBOL;
+		forNone['!'] = State::DOUBLESYMBOL;
+		forNone['<'] = State::DOUBLESYMBOL;
+		forNone['>'] = State::DOUBLESYMBOL;
+		forNone['='] = State::DOUBLESYMBOL;
 		forNone[' '] = State::NONE;
 		forNone['\n'] = State::NONE;
 		forNone['\t'] = State::NONE;
@@ -140,7 +152,13 @@ transitionMap Lexer::makeTransitions()
 		for (char ch = '0'; ch <= '9'; ch++)
 			forIdentifier[ch] = State::IDENTIFIER;
 		for (auto& symbPair : C_SYMBOLS)
-			forIdentifier[symbPair.first] = State::SYMBOLS;
+			forIdentifier[symbPair.first[0]] = State::SYMBOLS;
+		forIdentifier['|'] = State::DOUBLESYMBOL;
+		forIdentifier['&'] = State::DOUBLESYMBOL;
+		forIdentifier['!'] = State::DOUBLESYMBOL;
+		forIdentifier['<'] = State::DOUBLESYMBOL;
+		forIdentifier['>'] = State::DOUBLESYMBOL;
+		forIdentifier['='] = State::DOUBLESYMBOL;
 		forIdentifier['_'] = State::IDENTIFIER;
 		forIdentifier[' '] = State::NONE;
 		forIdentifier['\n'] = State::NONE;
@@ -152,7 +170,13 @@ transitionMap Lexer::makeTransitions()
 		for (char ch = '0'; ch <= '9'; ch++)
 			forNumber[ch] = State::NUMBER;
 		for (auto& symbPair : C_SYMBOLS)
-			forNumber[symbPair.first] = State::SYMBOLS;
+			forNumber[symbPair.first[0]] = State::SYMBOLS;
+		forNumber['|'] = State::DOUBLESYMBOL;
+		forNumber['&'] = State::DOUBLESYMBOL;
+		forNumber['!'] = State::DOUBLESYMBOL;
+		forNumber['<'] = State::DOUBLESYMBOL;
+		forNumber['>'] = State::DOUBLESYMBOL;
+		forNumber['='] = State::DOUBLESYMBOL;
 		forNumber['.'] = State::NUMBER;
 		forNumber[' '] = State::NONE;
 		forNumber['\n'] = State::NONE;
@@ -164,6 +188,11 @@ transitionMap Lexer::makeTransitions()
 		forSymbols = forNone;
 		transitions[State::SYMBOLS] = forSymbols;
 	}
+	{
+		forDSymbols = forNone;
+		transitions[State::DOUBLESYMBOL] = forDSymbols;
+	}
+
 
 	//transitions for Text state
 	{

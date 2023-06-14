@@ -13,6 +13,7 @@ const enum c_typeOfLexem {
 	SET, PLUS, MINUS, DIVISION, MULTIPLY, REMAINDER,
 	LRBRACKET, RRBRACKET, LSBRACKET, RSBRACKET, LCBRACKET, RCBRACKET,
 	COMMA, LESS, GREATER,  DECIMALPOINT, SEMICOLON, COLON, OR, AND, NOT,
+	LESSEQUAL, GREATEQUAL, EQUAL, NOTEQUAL,
 	SCANF, PRINTF,
 	BREAK, CONTINUE, RETURN,
 	ENDOFFILE
@@ -29,6 +30,7 @@ const string C_PRESENTATION[] = {
 	"set","plus","minus","division","multiply","rem",
 	"lrbracket","rrbracket","lsbracket","rsbracket", "lcbracket","rcbracket", 
 	"comma","less","greater","point","semicolon","colon", "OR", "AND", "NOT",
+	"lessequal","greatequal","equal","notequal",
 	"scanf", "printf",
 	"break","continue","return",
 	"EOF"
@@ -59,26 +61,29 @@ static const map<string, c_typeOfLexem> C_RESERVEDNAMES = {
 	{"printf", PRINTF}
 };
 
-static const map<char, c_typeOfLexem> C_SYMBOLS = {
-	{'=',SET},
-	{'+',PLUS},
-	{'-',MINUS},
-	{'*',MULTIPLY},
-	{'/',DIVISION},
-	{'%',REMAINDER},
-	{'(',LRBRACKET},
-	{')',RRBRACKET},
-	{'[',LSBRACKET},
-	{':', COLON},
-	{']',RSBRACKET},
-	{'{',LCBRACKET},
-	{'}',RCBRACKET},
-	{';',SEMICOLON},
-	{',',COMMA},
-	{'<', LESS},
-	{'>', GREATER},
-	{'.', DECIMALPOINT},
-	{'|', OR},
-	{'&', AND},
-	{'^', NOT}
+static const map<string, c_typeOfLexem> C_SYMBOLS = {
+	{"=",SET},
+	{"+",PLUS},
+	{"-",MINUS},
+	{"*",MULTIPLY},
+	{"/",DIVISION},
+	{"%",REMAINDER},
+	{"(",LRBRACKET},
+	{")",RRBRACKET},
+	{"[",LSBRACKET},
+	{":", COLON},
+	{"]",RSBRACKET},
+	{"{",LCBRACKET},
+	{"}",RCBRACKET},
+	{";",SEMICOLON},
+	{",",COMMA},
+	{"<", LESS},
+	{">", GREATER},
+	{".", DECIMALPOINT},
+	{"||", OR},
+	{"&&", AND},
+	{"!=", NOTEQUAL},
+	{"<=", LESSEQUAL},
+	{">=", GREATEQUAL},
+	{"==", EQUAL}
 };

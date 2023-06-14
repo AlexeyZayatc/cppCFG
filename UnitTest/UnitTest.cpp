@@ -884,11 +884,11 @@ public:
 
 	//LEXER
 	Lexer forC;
-	ifstream inputFile;
 
 	TEST_CLASS(testLexer) {
 		TEST_METHOD(Identifiers) {
 			//Output initialization
+			ifstream inputFile;
 			vector<Token> expectedOutput;
 			{
 				expectedOutput.push_back(Token("abc", "id", 1, 4));
@@ -932,6 +932,7 @@ public:
 		}
 		TEST_METHOD(Numbers) {
 			//Output initialization
+			ifstream inputFile;
 			vector<Token> expectedOutput;
 			{
 				expectedOutput.push_back(Token("5", "integer", 1, 2));
@@ -965,6 +966,7 @@ public:
 		}
 		TEST_METHOD(KeywordsAndReservedNames) {
 			//Output initialization
+			ifstream inputFile;
 			vector<Token> expectedOutput;
 			{
 				expectedOutput.push_back(Token("if", "if", 1, 3));
@@ -995,6 +997,7 @@ public:
 		}
 		TEST_METHOD(Symbols) {
 			//Output initialization
+			ifstream inputFile;
 			vector<Token> expectedOutput;
 			{
 			expectedOutput.push_back(Token("a", "id", 1, 2));
@@ -1023,19 +1026,28 @@ public:
 			expectedOutput.push_back(Token("<", "less", 3, 36));
 			expectedOutput.push_back(Token(">", "greater", 3, 38));
 			expectedOutput.push_back(Token(".", "point", 3, 40));
-			expectedOutput.push_back(Token("|", "OR", 3, 42));
-			expectedOutput.push_back(Token("&", "AND", 4, 2));
-			expectedOutput.push_back(Token("^", "NOT", 4, 4));
-			expectedOutput.push_back(Token("EOF", "EOF", 4, 4));
+			expectedOutput.push_back(Token("||", "OR", 3, 43));
+			expectedOutput.push_back(Token("&&", "AND", 4, 3));
+			expectedOutput.push_back(Token("!=", "notequal", 4, 6));
+			expectedOutput.push_back(Token("EOF", "EOF", 4, 6));
 			}
 			inputFile.open("../../UnitTest/LexerTests/SymbolsTests.txt", ios::in);
 			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
 			inputFile.close();
 			Assert::AreEqual(expectedOutput, programTokens);
+
+			inputFile.open("../../UnitTest/LexerTests/SymbolErrorTests.txt", ios::in);
+			auto func = [&] {
+				return forC.getTokensFromFile(inputFile);
+			};
+			Assert::ExpectException<Exception>(func);
+			inputFile.close();
+
 		}
 
 		TEST_METHOD(Text) {
 			//Output initialization
+			ifstream inputFile;
 			vector<Token> expectedOutput;			
 			{
 				expectedOutput.push_back(Token("sfdsfds", "char", 1, 9));
