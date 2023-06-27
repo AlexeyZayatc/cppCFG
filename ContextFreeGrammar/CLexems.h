@@ -85,5 +85,6 @@ static const map<string, c_typeOfLexem> C_SYMBOLS = {
 	{"!=", NOTEQUAL},
 	{"<=", LESSEQUAL},
 	{">=", GREATEQUAL},
-	{"==", EQUAL}
+	{"==", EQUAL},
+	{"!", NOT}
 };

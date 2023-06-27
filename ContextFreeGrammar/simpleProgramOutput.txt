@@ -1,4 +1,10 @@
 expectedOutput.push_back(Token("abc","id",1,4));
-expectedOutput.push_back(Token("|","integer",1,6));
-expectedOutput.push_back(Token("abc","id",1,10));
-expectedOutput.push_back(Token("EOF","EOF",1,10));
+expectedOutput.push_back(Token("<","less",1,6));
+expectedOutput.push_back(Token("abc","id",1,9));
+expectedOutput.push_back(Token("<=","lessequal",1,12));
+expectedOutput.push_back(Token("abc","id",1,15));
+expectedOutput.push_back(Token("!","NOT",1,17));
+expectedOutput.push_back(Token("abc","id",1,20));
+expectedOutput.push_back(Token("!","NOT",1,22));
+expectedOutput.push_back(Token("abc","id",1,26));
+expectedOutput.push_back(Token("EOF","EOF",1,26));
