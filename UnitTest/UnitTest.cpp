@@ -4,6 +4,9 @@
 #include "../ContextFreeGrammar/Exception.cpp"
 #include "../ContextFreeGrammar/Token.cpp"
 #include "../ContextFreeGrammar/Lexer.cpp"
+#include "../ContextFreeGrammar/Parser.h"
+#include "../ContextFreeGrammar/Generator.h"
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Microsoft {
 	namespace VisualStudio {
@@ -1044,7 +1047,6 @@ public:
 			inputFile.close();
 
 		}
-
 		TEST_METHOD(Text) {
 			//Output initialization
 			ifstream inputFile;
@@ -1073,6 +1075,52 @@ public:
 			};
 			Assert::ExpectException<Exception>(func);
 			inputFile.close();
+		}
+	};
+
+	TEST_CLASS(testGenerator) {
+		TEST_METHOD(everythingInOneTest) {
+			ifstream inputFile;
+			inputFile.open("../../UnitTest/GeneratorTests/everything.txt", ios::in);
+			vector<Token> programTokens = forC.getTokensFromFile(inputFile);
+			inputFile.close();
+			Parser pars(programTokens);
+			auto start = pars.parse();
+			Generator gen(start);
+			const std::string answer = "begin\n"
+"var b:=3;\n"
+"var c:=2;\n"
+"var d:=3;\n"
+"d:=(5 + 3) * 2  + 1 * (5 + 0) ;\n"
+"if (c = 2) or (d < 100)  then \n"
+"begin\n"
+"b:=5;\n"
+"end;\n"
+"if (c >= 3) and (b = 5)  then \n"
+"begin\n"
+"d:=7;\n"
+"end else\n"
+"begin\n"
+"d:=14;\n"
+"end;\n"
+"while d > 3 do\n"
+"begin\n"
+"b:=b + 5;\n"
+"d:=d - 7;\n"
+"if d <= 3 then \n"
+"begin\n"
+"b:=-5;\n"
+"break;\n"
+"end else\n"
+"begin\n"
+"continue;\n"
+"end;\n"
+"end;\n"
+"write(d,b);\n"
+"read(c);\n"
+"end.\n";
+			std::string genOutput = gen.getResult();
+			Assert::AreEqual(answer,genOutput);
 		}
 	};
 }

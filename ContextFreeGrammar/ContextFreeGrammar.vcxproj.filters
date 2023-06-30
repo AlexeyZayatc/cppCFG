@@ -30,6 +30,9 @@
     <ClInclude Include="Token.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="Generator.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CFG.cpp">
@@ -47,12 +50,24 @@
     <ClCompile Include="Token.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Parser.h">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="Generator.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="simpleProgram.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
     <Text Include="simpleProgramOutput.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="simplePascalOutput.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="a.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
   </ItemGroup>

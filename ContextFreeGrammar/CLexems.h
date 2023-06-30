@@ -14,7 +14,7 @@ const enum c_typeOfLexem {
 	LRBRACKET, RRBRACKET, LSBRACKET, RSBRACKET, LCBRACKET, RCBRACKET,
 	COMMA, LESS, GREATER,  DECIMALPOINT, SEMICOLON, COLON, OR, AND, NOT,
 	LESSEQUAL, GREATEQUAL, EQUAL, NOTEQUAL,
-	SCANF, PRINTF,
+	SCANF, PRINTF, MAIN,
 	BREAK, CONTINUE, RETURN,
 	ENDOFFILE
 };
@@ -31,7 +31,7 @@ const string C_PRESENTATION[] = {
 	"lrbracket","rrbracket","lsbracket","rsbracket", "lcbracket","rcbracket", 
 	"comma","less","greater","point","semicolon","colon", "OR", "AND", "NOT",
 	"lessequal","greatequal","equal","notequal",
-	"scanf", "printf",
+	"scanf", "printf", "main",
 	"break","continue","return",
 	"EOF"
 };
@@ -58,7 +58,8 @@ static const map<string, c_typeOfLexem> C_RESERVEDNAMES = {
 	{"true", TRUE},
 	{"false", FALSE},
 	{"scanf", SCANF},
-	{"printf", PRINTF}
+	{"printf", PRINTF},
+	{"main", MAIN}
 };
 
 static const map<string, c_typeOfLexem> C_SYMBOLS = {

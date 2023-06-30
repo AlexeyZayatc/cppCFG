@@ -133,18 +133,23 @@
   <ItemGroup>
     <ClInclude Include="CLexems.h" />
     <ClInclude Include="CFG.h" />
+    <ClInclude Include="Generator.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CFG.cpp" />
+    <ClCompile Include="Generator.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="Parser.h" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="a.txt" />
+    <Text Include="simplePascalOutput.txt" />
     <Text Include="simpleProgram.txt" />
     <Text Include="simpleProgramOutput.txt" />
   </ItemGroup>
