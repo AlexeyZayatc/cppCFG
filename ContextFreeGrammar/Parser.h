@@ -235,14 +235,14 @@ struct NodeDeclaration : Node
 {
 	NodeDeclaration(NodeType* type, vector<NodeDeclarator*>& declarators) : type(type), declarators(declarators) {};
 	virtual std::string generate() override {
-		std::string sDeclarators = "";
+		std::string sDeclarators;
 		std::vector<std::string> declVec;
 		auto sType = type->generate();
 		// id1,id2,id3 : type;
 		for (const auto decl : declarators) {
 			std::string nm = typeid(*decl).name();
 			if (nm == "struct NodeInitDeclarator")
-				sDeclarators += decl->generate() + ";\n";
+				sDeclarators += decl->generate() + "; ";
 			else
 				declVec.push_back(decl->generate());
 		}
@@ -253,8 +253,11 @@ struct NodeDeclaration : Node
 			else
 				multipleDecl += id +": " + sType;
 		}
-		if(multipleDecl!= "var ")
+		if (multipleDecl != "var ")
 			sDeclarators += multipleDecl + ";\n";
+		else
+			sDeclarators += "\n";
+
 		return sDeclarators;
 	}
 	virtual std::string toStr(int level) override {

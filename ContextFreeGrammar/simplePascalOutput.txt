@@ -1,12 +1,9 @@
 begin
+var g:=2; var x:=3; var u:=2.3; var y: real;
 var a: integer;
-var b:=2;
+var b:=2; 
 var c, d, e: real;
-var g:=2;
-var x:=3;
-var u:=2.3;
-var y: real;
-var my:=false;
+var my:=false; 
 var mymy, meme: boolean;
-var zxc:=true;
+var zxc:=true; 
 end.
