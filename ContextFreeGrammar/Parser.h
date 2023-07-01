@@ -54,8 +54,16 @@ struct Node {
 struct NodeType : public Node
 {
 	NodeType(string type) : type(type) {}
+	std::string getType(const std::string& tp) {
+		if (tp == "int")
+			return "integer";
+		if (tp == "float")
+			return "real";
+		if (tp == "bool")
+			return "boolean";
+	}
 	virtual std::string generate() override {
-		return type;
+		return getType(type);
 	}
 	virtual std::string toStr(int level) override {
 		string out = getTab(level);
@@ -225,8 +233,13 @@ struct NodeDeclaration : Node
 	NodeDeclaration(NodeType* type, vector<NodeDeclarator*>& declarators) : type(type), declarators(declarators) {};
 	virtual std::string generate() override {
 		std::string sDeclarators = "";
-		for (const auto decl : declarators)
-			sDeclarators += decl->generate() + ";\n";
+		for (const auto decl : declarators) {
+			std::string nm = typeid(*decl).name();
+			if (nm == "struct NodeInitDeclarator")
+				sDeclarators += decl->generate() + ";\n";
+			else
+				sDeclarators += "var " + decl->generate() + " : " + type->generate() + ";\n";
+		}
 		return sDeclarators;
 	}
 	virtual std::string toStr(int level) override {

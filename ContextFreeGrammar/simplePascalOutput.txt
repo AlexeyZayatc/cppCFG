@@ -1,11 +1,13 @@
 begin
-var b:=3;
-var c:=0;
-if b = 3 then 
-begin
-c:=5;
-end else
-begin
-c:=2;
-end;
+var a : integer;
+var b:=2;
+var c : real;
+var d : real;
+var e : real;
+var g:=2;
+var x:=3;
+var my:=false;
+var mymy : boolean;
+var meme : boolean;
+var zxc:=true;
 end.

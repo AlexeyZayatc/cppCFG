@@ -1,8 +1,9 @@
 int main() {
-	int b = 3, c = 0;
-	if (b == 3) {
-		c = 5;
-	} else {
-		c = 2;
-	}
+	int a;
+	int b = 2;
+	float c,d,e;
+	float g=2, x=3;
+	bool my=false;
+	bool mymy, meme;
+	bool zxc=true;
 }
