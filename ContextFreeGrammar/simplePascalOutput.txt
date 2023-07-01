@@ -1,32 +1,11 @@
 begin
 var b:=3;
-var c:=2;
-var d:=3;
-d:=(5 + 3) * 2  + 1 * (5 + 0) ;
-if (c = 2) or (d < 100)  then 
+var c:=0;
+if b = 3 then 
 begin
-b:=5;
-end;
-if (c >= 3) and (b = 5)  then 
-begin
-d:=7;
+c:=5;
 end else
 begin
-d:=14;
+c:=2;
 end;
-while d > 3 do
-begin
-b:=b + 5;
-d:=d - 7;
-if d <= 3 then 
-begin
-b:=-5;
-break;
-end else
-begin
-continue;
-end;
-end;
-write(d,b);
-read(c);
 end.

@@ -16,6 +16,7 @@ int main() {
 	//output <<  " | LEXEM           | TYPE            | ROW             | COLUMN          | \n";
 	//for (auto& token : programTokens)
 	//	output << "expectedOutput.push_back(Token(\"" << token.mLexem << "\",\""<< token.mLexemType << "\"," << token.row << "," << token.column << "));" << '\n';
+	cout << program->toStr();
 	simple.close();
 	//output.close();
 	ofstream output("simplePascalOutput.txt", ios::out);

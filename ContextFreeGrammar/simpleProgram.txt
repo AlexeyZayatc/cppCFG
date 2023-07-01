@@ -1,29 +1,8 @@
 int main() {
-	int b = 3;
-	int c = 2, d =3;
-	d = (5 + 3) * 2 + 1* (5 + 0);
-	if (c == 2 || d<100)
-	{
-		b = 5;
+	int b = 3, c = 0;
+	if (b == 3) {
+		c = 5;
+	} else {
+		c = 2;
 	}
-	if (c>=3 && b==5)
-	{
-		d=7;
-	}
-	else {
-		d=14;
-	}
-	while(d>3) {
-		b=b+5;
-		d=d-7;
-		if(d<=3){
-			b=-5;
-			break;
-		}
-		else{
-			continue;
-		}
-	}
-	printf(d, b);
-	scanf(c);
 }
