@@ -1,13 +1,22 @@
 #pragma once
+#pragma once
 #include <vector>;
 #include <iterator>;
 #include "string"
 #include "Token.h";
 #include "CLexems.h";
+#include "SymbolTable.h"
 
 struct Node {
 	Node() = default;
 	virtual std::string generate() = 0;
+	virtual std::string toStr(int level = 0) = 0;
+
+	char tabSym = ' ';
+	string tab = "    ";
+	inline string getTab(int level) {
+		return string(level * 4, tabSym);
+	}
 
 	std::string getOperation(const std::string& operation) {
 		if (operation == "plus")
@@ -40,14 +49,18 @@ struct Node {
 	};
 };
 
+
 //тип например int float ...
-class NodeType : public Node
+struct NodeType : public Node
 {
-public:
 	NodeType(string type) : type(type) {}
 	virtual std::string generate() override {
 		return type;
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "type" + '\n' + out + tab + type + '\n';
+	};
 
 	string type;
 };
@@ -60,6 +73,10 @@ struct NodeVar : public Node
 	virtual std::string generate() override {
 		return name;
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "name" + '\n' + out + tab + name + '\n';
+	};
 	string name;
 };
 
@@ -70,6 +87,10 @@ struct NodeConstant : Node
 	virtual std::string generate() override {
 		return val;
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "val" + '\n' + out + tab + val + '\n' + out + typeid(*type).name() + '\n' + type->toStr(level + 1) + '\n';
+	};
 	string val;
 	NodeType* type;
 };
@@ -79,8 +100,12 @@ struct NodeCast : Node
 {
 	NodeCast(NodeType* type, Node* expr) : type(type), expr(expr) {}
 	virtual std::string generate() override {
-		return "("+type->generate()+")" + expr->generate();
+		return "(" + type->generate() + ")" + expr->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*type).name() + '\n' + type->toStr(level + 1) + '\n' + out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
+	};
 	NodeType* type;
 	Node* expr;
 };
@@ -92,6 +117,10 @@ struct NodeUnary : Node
 	virtual std::string generate() override {
 		return getOperation(unaryOp) + expr->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "unaryOp" + '\n' + out + tab + unaryOp + '\n' + out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
+	};
 	string unaryOp;
 	NodeCast* expr;
 };
@@ -102,23 +131,27 @@ struct NodeBinaryOperator : Node
 	NodeBinaryOperator(Node* left, string op, Node* right) : left(left), op(op), right(right) {}
 	virtual std::string generate() override {
 
-		
+
 		std::string sOp = getOperation(op);
-		if(sOp =="and" || sOp =="or")
+		if (sOp == "and" || sOp == "or")
 			return "(" + left->generate() + ") " + sOp + " (" + right->generate() + ") ";
 		std::string typeLeft = typeid(*left).name();
 		std::string typeRight = typeid(*right).name();
 		if (typeLeft == "struct NodeExpressionList" && typeRight == "struct NodeExpressionList") {
 			return "(" + left->generate() + ") " + sOp + " (" + right->generate() + ") ";
 		}
-		else if (typeLeft == "struct NodeExpressionList" ) {
+		else if (typeLeft == "struct NodeExpressionList") {
 			return "(" + left->generate() + ") " + sOp + " " + right->generate() + " ";
 		}
 		else if (typeRight == "struct NodeExpressionList") {
 			return left->generate() + " " + sOp + " (" + right->generate() + ") ";
 		}
-		return left->generate()+" " + sOp +" " + right->generate();
+		return left->generate() + " " + sOp + " " + right->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "op" + '\n' + out + tab + op + '\n' + out + typeid(*left).name() + '\n' + left->toStr(level + 1) + '\n' + out + typeid(*right).name() + '\n' + right->toStr(level + 1);
+	};
 	Node* left;
 	string op;
 	Node* right;
@@ -129,20 +162,32 @@ struct NodeBreak : Node {
 	virtual std::string generate() {
 		return "break;\n";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "Break\n";
+	};
 };
 struct NodeContinue : Node {
 	virtual std::string generate() {
 		return "continue;\n";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + "Continue\n";
+	};
 };
 
 //присваивание значения переменной
-struct NodeAssigning : Node 
+struct NodeAssigning : Node
 {
 	NodeAssigning(NodeVar* var, Node* expr) : var(var), expr(expr) {}
 	virtual std::string generate() override {
-		return var->generate() + ":=" + expr->generate()+";\n";
+		return var->generate() + ":=" + expr->generate() + ";\n";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*var).name() + '\n' + var->toStr(level + 1) + '\n' + out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
+	};
 	NodeVar* var;
 	Node* expr;
 };
@@ -154,6 +199,10 @@ struct NodeDeclarator : Node
 	virtual std::string generate() override {
 		return var->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*var).name() + '\n' + var->toStr(level + 1) + '\n';
+	};
 	NodeVar* var;
 };
 
@@ -161,8 +210,12 @@ struct NodeDeclarator : Node
 struct NodeInitDeclarator : NodeDeclarator {
 	NodeInitDeclarator(NodeVar* var, Node* assign) : NodeDeclarator(var), assign(assign) {};
 	virtual std::string generate() override {
-		return "var "+ var->generate() + ":=" + assign->generate();
+		return "var " + var->generate() + ":=" + assign->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*var).name() + '\n' + var->toStr(level + 1) + '\n' + out + typeid(*assign).name() + '\n' + assign->toStr(level + 1);
+	};
 	Node* assign;
 };
 
@@ -176,6 +229,14 @@ struct NodeDeclaration : Node
 			sDeclarators += decl->generate() + ";\n";
 		return sDeclarators;
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		string realOut = out + typeid(*type).name() + '\n' + type->toStr(level + 1) + '\n';
+		for (auto& declarator : declarators) {
+			realOut += out + typeid(*declarator).name() + '\n' + declarator->toStr(level + 1);
+		}
+		return realOut;
+	};
 	NodeType* type;
 	vector<NodeDeclarator*> declarators;
 };
@@ -187,10 +248,18 @@ struct NodeExpressionList : Node
 	virtual std::string generate() override {
 		std::string result;
 		for (const auto expr : expressions) {
-			result += expr->generate()+",";
+			result += expr->generate() + ",";
 		}
 		return result.substr(0, result.size() - 1);
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		string realOut = "";
+		for (auto& expr : expressions) {
+			realOut += out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
+		}
+		return realOut;
+	};
 	vector<Node*> expressions;
 };
 
@@ -201,6 +270,10 @@ struct NodeIf : Node
 	virtual std::string generate() override {
 		return "if " + condition->generate() + " then \n" + ifStatement->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*condition).name() + '\n' + condition->toStr(level + 1) + '\n' + out + typeid(*ifStatement).name() + '\n' + ifStatement->toStr(level + 1);
+	};
 	NodeExpressionList* condition;
 	Node* ifStatement;
 };
@@ -215,6 +288,10 @@ struct NodeIfElse : NodeIf
 		return "if " + condition->generate() + " then \n" + ifBody +
 			"end else\n" + elseStatement->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*condition).name() + '\n' + condition->toStr(level + 1) + '\n' + out + typeid(*ifStatement).name() + '\n' + ifStatement->toStr(level + 1) + '\n' + out + typeid(*elseStatement).name() + '\n' + elseStatement->toStr(level + 1);
+	};
 	Node* elseStatement;
 };
 
@@ -225,6 +302,10 @@ struct NodeWhile : Node
 	virtual std::string generate() override {
 		return "while " + condition->generate() + " do\n" + statement->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*condition).name() + '\n' + condition->toStr(level + 1) + '\n' + out + typeid(*statement).name() + '\n' + statement->toStr(level + 1);
+	};
 	NodeExpressionList* condition;
 	Node* statement;
 };
@@ -234,8 +315,12 @@ struct NodeReservedFunc : public Node
 {
 	NodeReservedFunc(NodeExpressionList* parameters) : parameters(parameters) {}
 	virtual std::string generate() override {
-		return "("+parameters->generate()+")";
+		return "(" + parameters->generate() + ")";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*parameters).name() + '\n' + parameters->toStr(level + 1);
+	};
 	NodeExpressionList* parameters;
 };
 
@@ -245,14 +330,22 @@ struct NodePrintF : public NodeReservedFunc
 	virtual std::string generate() override {
 		return "write(" + parameters->generate() + ");\n";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*parameters).name() + '\n' + parameters->toStr(level + 1);
+	};
 };
 
 struct NodeScanF : NodeReservedFunc
 {
 	NodeScanF(NodeExpressionList* parameters) : NodeReservedFunc(parameters) {}
-	virtual std::string generate() override{
+	virtual std::string generate() override {
 		return "read(" + parameters->generate() + ");\n";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*parameters).name() + '\n' + parameters->toStr(level + 1);
+	};
 };
 
 //блок { }
@@ -263,11 +356,19 @@ public:
 	virtual std::string generate() override {
 		std::string program = "begin\n";
 		for (auto child : children) {
-			if(child!=nullptr)
+			if (child != nullptr)
 				program += child->generate();
 		}
 		return program + "end;\n";
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		string realOut = "";
+		for (auto& child : children) {
+			realOut += out + typeid(*child).name() + '\n' + child->toStr(level + 1);
+		}
+		return realOut;
+	};
 	vector<Node*> children;
 };
 
@@ -279,373 +380,72 @@ public:
 	virtual std::string generate() override {
 		return mainFunc->generate();
 	}
+	virtual std::string toStr(int level) override {
+		string out = getTab(level);
+		return out + typeid(*mainFunc).name() + '\n' + mainFunc->toStr(level + 1);
+	};
 
 	NodeCompoundStatement* mainFunc;
 };
 
-
-
-
 class Parser
 {
 public:
-	Parser(vector<Token> tokens) : mTokens(tokens), it(mTokens.begin()) {}
+	Parser(vector<Token> tokens);
 
-	Node* mainFunc()
-	{
-		require("int", TYPE); it++;
-		require(MAIN); it++;
-		require(LRBRACKET); it++;
-		require(RRBRACKET); it++;
-		return new NodeTranslationUnit((NodeCompoundStatement*) compoundStatement());
-	}
+	Node* mainFunc();
 
-	Node* castExpression()
-	{
-		string name = (*it).mLexem;
-		string sym = (*it).mLexemType;
+	//здесь не только каст, но и константы и переменные
+	Node* castExpression();
 
-		if (sym == "lrbracket") {
-			it++;
-			if ((*it).mLexemType == "type")
-			{
-				require(TYPE);
-				NodeType* type = new NodeType((*it).mLexemType);
-				it++;
-				require(RRBRACKET); it++;
-				return new NodeCast(type, castExpression());
-			}
-			NodeExpressionList* expr = (NodeExpressionList*)expressionList();
-			require(RRBRACKET); it++;
-			return expr;
-		}
+	Node* multiplicativeExpression();
 
-		if (sym == "plus" || sym == "minus" || sym == "NOT")
-		{
-			it++;
-			return new NodeUnary(sym, (NodeCast*) castExpression());
-		}
+	Node* additiveExpression();
 
-		if (sym == "id") {
-			it++;
-			return new NodeVar(name);
-		}
-		if (sym == "integer" || sym == "float" || sym == "char" || sym == "true" || sym == "false") {
-			it++;
-			return new NodeConstant(name, new NodeType(sym));
-		}
+	Node* relationalExpression();
 
-		error();
-	}
+	Node* equalityExpression();
 
-	Node* multiplicativeExpression()
-	{
-		Node* left = castExpression();
-		string op = (*it).mLexemType;
-		while (op == "multiply" || op == "division" || op == "rem")
-		{
-			it++;
-			left = new NodeBinaryOperator(left, op, multiplicativeExpression());
-			op = (*it).mLexemType;
-		}
-		return left;
-	}
+	Node* logicalAndExpression();
 
-	Node* additiveExpression()
-	{
-		Node* left = multiplicativeExpression();
-		string op = (*it).mLexemType;
-		while (op == "plus" || op == "minus")
-		{
-			it++;
-			left = new NodeBinaryOperator(left, op, additiveExpression());
-			op = (*it).mLexemType;
-		}
-		return left;
-	}
+	Node* logicalOrExpression();
 
-	Node* relationalExpression()
-	{
-		Node* left = additiveExpression();
-		string op = (*it).mLexemType;
-		while (op == "less" || op == "greater" || op == "lessequal" || op == "greatequal")
-		{
-			it++;
-			left = new NodeBinaryOperator(left, op, relationalExpression());
-			op = (*it).mLexemType;
-		}
-		return left;
-	}
+	Node* conditionalExpression();
 
-	Node* equalityExpression()
-	{
-		Node* left = relationalExpression();
-		string op = (*it).mLexemType;
-		while (op == "equal" || op == "notequal")
-		{
-			it++;
-			left = new NodeBinaryOperator(left, op, equalityExpression());
-			op = (*it).mLexemType;
-		}
-		return left;
-	}
+	Node* expression();
 
-	Node* logicalAndExpression()
-	{
-		Node* left = equalityExpression();
-		while ((*it).mLexemType == "AND")
-		{
-			it++;
-			left = new NodeBinaryOperator(left, "AND", logicalAndExpression());
-		}
-		return left;
-	}
+	Node* declarator();
 
-	Node* logicalOrExpression()
-	{
-		Node* left = logicalAndExpression();
-		while ((*it).mLexemType == "OR")
-		{
-			it++;
-			left = new NodeBinaryOperator(left, "OR", logicalOrExpression());
-		}
-		return left;
-	}
+	Node* declaration();
 
-	Node* conditionalExpression()
-	{
-		return logicalOrExpression();
-	}
+	Node* blockItem();
 
-	Node* expression()
-	{
-		if ((*it).mLexemType == "id")
-		{
-			string id = (*it).mLexem;
-			it++;
-			if ((*it).mLexemType == "set")
-			{
-				it++;
-				return new NodeAssigning(new NodeVar(id), expression());
-			}
-			it--;
-		}
+	Node* expressionList();
 
-		return conditionalExpression();
-	}
+	Node* expressionStatement();
 
-	Node* declarator()
-	{
-		require(IDENTIFIER);
-		string id = (*it).mLexem; it++;
+	Node* reservedFuncStatement();
 
-		if ((*it).mLexemType == "set")
-		{
-			it++;
-			return new NodeInitDeclarator(new NodeVar(id), expression());
-		}
-		return new NodeDeclarator(new NodeVar(id));
-	}
+	Node* iterationStatement();
 
-	Node* declaration()
-	{
-		require(TYPE);
-		NodeType* type = new NodeType((*it).mLexem);
-		it++;
+	Node* selectionStatement();
 
-		//не через do while, потому что declaration может быть "type_name;"
-		vector<NodeDeclarator*> declarators;
-		while ((*it).mLexemType != "semicolon" && (*it).mLexemType != "EOF")
-		{
-			declarators.push_back((NodeDeclarator*) declarator());
-			if ((*it).mLexemType != "comma")
-				break;
-			it++;
-		}
-		require(SEMICOLON); it++;
+	Node* compoundStatement();
 
-		return new NodeDeclaration(type, declarators);
-	}
+	Node* statement();
 
-	Node* blockItem()
-	{
-		//declaration
-		if ((*it).mLexemType == "type")
-		{
-			//std::cout << "Declaration" << endl;
-			return declaration();
-		}
-		//statement
-		else
-		{
-			//std::cout << "Statement" << endl;
-			return statement();
-		}
+	Node* parse();
 
-	}
+	void require(c_typeOfLexem type);
 
-	Node* expressionList()
-	{
-		vector<Node*> expressions;
-		do {
-			if ((*it).mLexemType == "comma") {
-				it++;
-			}
-			expressions.push_back(expression());
-		} while ((*it).mLexemType == "comma" && (*it).mLexemType != "EOF");
+	void require(string name, c_typeOfLexem type);
 
-		NodeExpressionList* expr = new NodeExpressionList(expressions);
-		return expr;
-	}
+	void error(string msg);
 
-	Node* expressionStatement()
-	{
-
-		vector<Node*> expressions;
-		while ((*it).mLexemType != "semicolon" && (*it).mLexemType != "EOF")
-		{
-			expressions.push_back(expression());
-			if ((*it).mLexemType != "comma")
-				break;
-		}
-		require(SEMICOLON); it++;
-		return new NodeExpressionList(expressions);
-	}
-
-	Node* reservedFuncStatement()
-	{
-		auto lexemType = (*it).mLexemType;
-		it++;
-		require(LRBRACKET); it++;
-		NodeExpressionList* expressions = (NodeExpressionList*)expressionList();
-		require(RRBRACKET); it++;
-		require(SEMICOLON); it++;
-		if (lexemType == "printf")
-		{
-			return new NodePrintF(expressions);
-		}
-		if (lexemType == "scanf")
-		{
-			return new NodeScanF(expressions);
-		}
-	}
-
-	Node* iterationStatement()
-	{
-		require(WHILE); it++;
-		require(LRBRACKET); it++;
-		NodeExpressionList* exprList = (NodeExpressionList*)expressionList();
-		require(RRBRACKET); it++;
-		Node* body = statement();
-		return new NodeWhile(exprList, body);
-	}
-
-	Node* selectionStatement()
-	{
-		require(IF); it++;
-		require(LRBRACKET); it++;
-		NodeExpressionList* exprList = (NodeExpressionList*) (expressionList());
-		require(RRBRACKET); it++;
-		Node* body = statement();
-		if ((*it).mLexemType == "else")
-		{
-			it++;
-			Node* elseBody = statement();
-			return new NodeIfElse(exprList, body, elseBody);
-		}
-		return new NodeIf(exprList, body);
-	}
- 
-	Node* compoundStatement()
-	{
-		require(LCBRACKET); it++;
-		vector<Node*> blockItems;
-		while ((*it).mLexemType != "rcbracket" && (*it).mLexemType != "EOF") {
-			blockItems.push_back(blockItem());
-		}
-		require(RCBRACKET); it++;
-		return new NodeCompoundStatement(blockItems);
-	}
-
-	Node* statement()
-	{
-		string tokenType = (*it).mLexemType;
-		if (tokenType == "lcbracket")
-		{
-			return compoundStatement();
-		}
-
-		if (tokenType == "id" || tokenType == "integer" || tokenType == "float"
-			|| tokenType == "char" || tokenType == "true" || tokenType == "false")
-		{
-			return expressionStatement();
-		}
-
-		if (tokenType == "if")
-		{
-			return selectionStatement();
-		}
-
-		if (tokenType == "while")
-		{
-			return iterationStatement();
-		}
-
-		if (tokenType == "printf" || tokenType == "scanf")
-		{
-			return reservedFuncStatement();
-		}
-
-		if (tokenType == "break")
-		{
-			it++;
-			require(SEMICOLON); it++;
-			return new NodeBreak();
-		}
-
-		if (tokenType == "continue")
-		{
-			it++;
-			require(SEMICOLON); it++;
-			return new NodeContinue();
-		}
-
-		error();
-	}
-
-	Node* parse()
-	{
-		if ((*it).mLexemType == "EOF") 
-		{
-			std::cout << "Empty file" << endl;
-		}
-		else 
-		{
-			return mainFunc();
-		}
-	}
-
-	void require(c_typeOfLexem type) { //просто для красоты на вход кидаю enum
-		if ((*it).mLexemType != C_PRESENTATION[type])
-		{
-			cout << "Excepted token: " + C_PRESENTATION[type] << " at " << (*it).row << ":" << (*it).column <<endl;
-			exit(1);
-		}
-	}
-
-	void require(string name, c_typeOfLexem type) {
-		if ((*it).mLexemType != C_PRESENTATION[type] || (*it).mLexem != name)
-		{
-			cout << "Excepted token: " + C_PRESENTATION[type] << " at " << (*it).row << ":" << (*it).column << endl;
-			exit(1);
-		}
-	}
-
-	void error() {
-		cout << "Error at " << (*it).row << ":" << (*it).column << endl;
-		exit(1);
-	}
+	void semanticError(string varName, bool varDefined);
 private:
 	vector<Token> mTokens;
-	vector<Token>::iterator it;
+	vector<Token>::iterator itToken;
+	SymbolTableStack symStack;
+
 };

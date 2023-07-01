@@ -136,6 +136,8 @@
     <ClInclude Include="Generator.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="Parser.h" />
+    <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
   </ItemGroup>
   <ItemGroup>
@@ -143,8 +145,9 @@
     <ClCompile Include="Generator.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Exception.cpp" />
-    <ClCompile Include="Parser.h" />
+    <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="SymbolTable.cpp" />
     <ClCompile Include="Token.cpp" />
   </ItemGroup>
   <ItemGroup>
