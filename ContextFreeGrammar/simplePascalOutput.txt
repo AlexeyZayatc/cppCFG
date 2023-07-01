@@ -1,13 +1,12 @@
 begin
-var a : integer;
+var a: integer;
 var b:=2;
-var c : real;
-var d : real;
-var e : real;
+var c, d, e: real;
 var g:=2;
 var x:=3;
+var u:=2.3;
+var y: real;
 var my:=false;
-var mymy : boolean;
-var meme : boolean;
+var mymy, meme: boolean;
 var zxc:=true;
 end.

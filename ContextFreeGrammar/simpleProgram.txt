@@ -2,7 +2,7 @@ int main() {
 	int a;
 	int b = 2;
 	float c,d,e;
-	float g=2, x=3;
+	float g=2, x=3, y, u=2.3;
 	bool my=false;
 	bool mymy, meme;
 	bool zxc=true;

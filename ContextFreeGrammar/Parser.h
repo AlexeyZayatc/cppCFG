@@ -1,11 +1,14 @@
 #pragma once
 #pragma once
-#include <vector>;
-#include <iterator>;
-#include "string"
-#include "Token.h";
-#include "CLexems.h";
+#include <vector>
+#include <iterator>
+#include <string>
+#include <map>
+
+#include "Token.h"
+#include "CLexems.h"
 #include "SymbolTable.h"
+
 
 struct Node {
 	Node() = default;
@@ -233,13 +236,25 @@ struct NodeDeclaration : Node
 	NodeDeclaration(NodeType* type, vector<NodeDeclarator*>& declarators) : type(type), declarators(declarators) {};
 	virtual std::string generate() override {
 		std::string sDeclarators = "";
+		std::vector<std::string> declVec;
+		auto sType = type->generate();
+		// id1,id2,id3 : type;
 		for (const auto decl : declarators) {
 			std::string nm = typeid(*decl).name();
 			if (nm == "struct NodeInitDeclarator")
 				sDeclarators += decl->generate() + ";\n";
 			else
-				sDeclarators += "var " + decl->generate() + " : " + type->generate() + ";\n";
+				declVec.push_back(decl->generate());
 		}
+		std::string multipleDecl = "var ";
+		for (const auto& id : declVec) {
+			if (id != declVec.back())
+				multipleDecl += id + ", ";
+			else
+				multipleDecl += id +": " + sType;
+		}
+		if(multipleDecl!= "var ")
+			sDeclarators += multipleDecl + ";\n";
 		return sDeclarators;
 	}
 	virtual std::string toStr(int level) override {
