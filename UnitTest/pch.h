@@ -10,4 +10,7 @@
 // Добавьте сюда заголовочные файлы для предварительной компиляции
 #include "../ContextFreeGrammar/CFG.h"
 #include "../ContextFreeGrammar/Lexer.h"
+#include "../ContextFreeGrammar/Parser.h"
+#include "../ContextFreeGrammar/SymbolTable.h"
+#include "../ContextFreeGrammar/Generator.h"
 #endif //PCH_H

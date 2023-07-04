@@ -4,8 +4,9 @@
 #include "../ContextFreeGrammar/Exception.cpp"
 #include "../ContextFreeGrammar/Token.cpp"
 #include "../ContextFreeGrammar/Lexer.cpp"
-#include "../ContextFreeGrammar/Parser.h"
-#include "../ContextFreeGrammar/Generator.h"
+#include "../ContextFreeGrammar/Parser.cpp"
+#include "../ContextFreeGrammar/Generator.cpp"
+#include "../ContextFreeGrammar/SymbolTable.cpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 namespace Microsoft {

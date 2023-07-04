@@ -353,6 +353,7 @@ Node* Parser::parse()
 	if ((*itToken).mLexemType == "EOF") 
 	{
 		std::cout << "Empty file" << endl;
+		return nullptr;
 	}
 	else 
 	{
