@@ -13,6 +13,8 @@ using namespace std;
 
 typedef vector<vector<Token>> ruleRHS;
 typedef map<Token, ruleRHS> ruleDict;
+typedef vector<vector<set<string>>> parseTable;
+
 class CFG
 {
 public:
@@ -44,6 +46,9 @@ public:
 	CFG removeChainRules() const;
 	CFG makeChomskyNormalForm() const;
 	CFG makeGreibachNormalForm() const;
+	parseTable getCockeYoungerKasamiTable(const vector<string>& inputString) const noexcept;
+	void cockeYoungerKasamiOutput(const parseTable& _parseTable) const noexcept;
+
 	wstring toWString() const;
 private:
 	bool isRuleContainOnlyGoodTokens(const vector<Token>& rhs, const set<Token>& goodTokens)const ;
@@ -54,6 +59,8 @@ private:
 		const set<Token>& lambdaNT,
 		const set<Token>& terminalNT) const ;
 	void removeDublicateRules(ruleDict& rules) ;
+	size_t cykGen(const size_t& i, const size_t& j, const string& currentNonTerminal) const noexcept;
+
 	set<Token> getLambdaNonTerminals() const ;
 	set<Token> getGoodNonTerminals() const ;
 	set<Token> getTerminalNTForLambda(const set<Token>& lambdaNT) const ;

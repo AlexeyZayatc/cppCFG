@@ -616,7 +616,7 @@ CFG CFG::makeChomskyNormalForm() const
 	//5) обработать правила n=2
 	//   A->aB-> a'B, A->Ba ->Ba', A->ab ->a'b'
 	//6) для новых нетерминалов a'(a is in T) add rule a'->a
-	CFG newGrammar = removeLambdaRules();
+	CFG newGrammar = removeLambdaRules().removeChainRules();
 	ruleDict newRules;
 	pair<size_t, size_t> combination= {0, 1};
 	set<pair<Token,vector<Token>>> newNonTerminals;
@@ -830,6 +830,103 @@ CFG CFG::makeGreibachNormalForm() const
 		newRules[terminalPair.first].push_back(terminalPair.second);
 	}
 	return CFG(move(newGrammar.mNonTerminals), move(newGrammar.mTerminals),move(newRules),move(newGrammar.mAxiom));
+}
+
+parseTable CFG::getCockeYoungerKasamiTable(const vector<string>& inputString) const noexcept
+{
+	parseTable table;
+	auto newGrammar = makeChomskyNormalForm();
+	newGrammar.printCFG();
+	//выделение памяти для таблицы
+	table.reserve(inputString.size());
+	for (size_t i = 0; i < table.capacity(); i++) {
+		table.push_back(vector<set<string>>());
+		table[i].reserve(inputString.size() - i);
+		for (size_t j = 0; j < table[i].capacity(); j++) {
+			table[i].push_back(set<string>());
+		}
+	}
+
+	auto printSet = [](const set<string>& st) {
+		for (const auto& str : st)
+			std::cout << str << " ";
+		std::cout << " | ";
+	};
+
+	//заполнение первой строки t0i = { A | (A->ai) }
+	std::cout << "table:\n";
+	size_t currentTerminalPos = 0;
+	for (const auto& terminal : inputString) {
+		for (const auto& [nonTerminal, rules] : newGrammar.mRules) {
+			for (const auto& currentRule : rules) {
+				if (currentRule[0].mLexem == terminal)
+					table[0][currentTerminalPos].insert(nonTerminal.mLexem);
+			}
+		}
+		printSet(table[0][currentTerminalPos]);
+		currentTerminalPos++;
+	}
+
+	auto getAllPossibleRules = [](const set<string>& left, const set<string>& right) {
+		set<pair<string, string>> pairs;
+		for (const auto& leftNonTerminal : left) {
+			for (const auto& rightNonTerminal : right) {
+				pairs.insert(pair(leftNonTerminal, rightNonTerminal));
+			}
+		}
+		return pairs;
+	};
+	auto findAllNonTerminals = [&](const set<pair<string,string>>& allPairs) {
+		set<string> result;
+		for (const auto& [nonTerminal, rules] : newGrammar.mRules) {
+			bool toAdd = false;
+			for (const auto& rule : rules) {
+				if (rule.size() == 2) {
+					for (const auto& [first,second] : allPairs)
+					{
+						if (rule[0].mLexem == first && rule[1].mLexem == second)
+						{
+							toAdd = true;
+							break;
+						}
+					}
+				}
+				if (toAdd) break;
+			}
+			if (toAdd) {
+				result.insert(nonTerminal.mLexem);
+				continue;
+			}
+		}
+		return result;
+	};
+	
+	std::cout << "\n";
+	size_t currentSplitSize = 2;
+	while (currentSplitSize <= inputString.size()) {
+		for (size_t cellIndex = 0; cellIndex < table[currentSplitSize - 1].size(); cellIndex++) {
+			set<pair<string, string>> neededRules;
+			size_t subSplitSize = 1;
+			while (subSplitSize < currentSplitSize) {
+				
+				 neededRules.merge(getAllPossibleRules(table[subSplitSize - 1][cellIndex],
+					table[currentSplitSize - subSplitSize - 1][cellIndex + subSplitSize]));
+				subSplitSize++;
+			}
+			set<string> neededNonTerminals = findAllNonTerminals(neededRules);
+			table[currentSplitSize - 1][cellIndex] = neededNonTerminals;
+			printSet(table[currentSplitSize - 1][cellIndex]);
+		}
+		std::cout << "\n";
+		currentSplitSize++;
+	}
+	return table;
+}
+
+void CFG::cockeYoungerKasamiOutput(const parseTable& _parseTable) const noexcept
+{
+	auto newGrammar = makeChomskyNormalForm();
+
 }
 
 set<Token> CFG::getGoodNonTerminals() const 

@@ -7,22 +7,17 @@
 
 using namespace std;
 int main() {
-	Lexer forC;
-	ifstream simple("simpleProgram.txt", ios::in);
-	vector<Token> programTokens = forC.getTokensFromFile(simple);
-	Parser parser(programTokens);
-	auto program = (parser.parse());
-	/*ofstream output("simpleProgramOutput.txt", ios::out);*/
-	//output <<  " | LEXEM           | TYPE            | ROW             | COLUMN          | \n";
-	//for (auto& token : programTokens)
-	//	output << "expectedOutput.push_back(Token(\"" << token.mLexem << "\",\""<< token.mLexemType << "\"," << token.row << "," << token.column << "));" << '\n';
-	cout << program->toStr();
-	simple.close();
-	//output.close();
-	ofstream output("simplePascalOutput.txt", ios::out);
-	Generator gen(program);
-	gen.generate(output);
-	output.close();
-	return 0;
+	CFG cfgMath(
+		{ "T","E","F" },
+		{ "+","*","(",")","a" },
+				{
+				  {"E", {"E*F","F"}},
+				  {"T", {"(E)","a"}},
+				  {"F", {"F+T","T"}}
+				},
+		"E"
+	);
+	auto temp = cfgMath.getCockeYoungerKasamiTable({"(","a","+","a","*","a"});
 
+		return 0;
 }
