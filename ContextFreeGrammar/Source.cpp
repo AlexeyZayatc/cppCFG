@@ -17,7 +17,7 @@ int main() {
 				},
 		"E"
 	);
-	auto temp = cfgMath.getCockeYoungerKasamiTable({"(","a","+","a","*","a"});
+	cfgMath.CockeYoungerKasamiTree({"a","*","(","a","+","a",")"});
 
 		return 0;
 }

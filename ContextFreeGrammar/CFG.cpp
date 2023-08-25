@@ -1,7 +1,4 @@
-﻿#include <ranges>
-
-#include "CFG.h"
-#include "Exception.h"
+﻿#include "CFG.h"
 
 
 CFG::CFG(const set<string>& nonTerminals,
@@ -405,6 +402,7 @@ void CFG::removeDublicateRules(ruleDict& rules)
 			rulePair.second.end());
 	}
 }
+
 
 CFG CFG::removeLambdaRules() const 
 { 
@@ -832,7 +830,7 @@ CFG CFG::makeGreibachNormalForm() const
 	return CFG(move(newGrammar.mNonTerminals), move(newGrammar.mTerminals),move(newRules),move(newGrammar.mAxiom));
 }
 
-parseTable CFG::getCockeYoungerKasamiTable(const vector<string>& inputString) const noexcept
+void CFG::CockeYoungerKasamiTree(const vector<string>& inputString) const noexcept
 {
 	parseTable table;
 	auto newGrammar = makeChomskyNormalForm();
@@ -847,14 +845,7 @@ parseTable CFG::getCockeYoungerKasamiTable(const vector<string>& inputString) co
 		}
 	}
 
-	auto printSet = [](const set<string>& st) {
-		for (const auto& str : st)
-			std::cout << str << " ";
-		std::cout << " | ";
-	};
-
 	//заполнение первой строки t0i = { A | (A->ai) }
-	std::cout << "table:\n";
 	size_t currentTerminalPos = 0;
 	for (const auto& terminal : inputString) {
 		for (const auto& [nonTerminal, rules] : newGrammar.mRules) {
@@ -863,7 +854,6 @@ parseTable CFG::getCockeYoungerKasamiTable(const vector<string>& inputString) co
 					table[0][currentTerminalPos].insert(nonTerminal.mLexem);
 			}
 		}
-		printSet(table[0][currentTerminalPos]);
 		currentTerminalPos++;
 	}
 
@@ -900,8 +890,8 @@ parseTable CFG::getCockeYoungerKasamiTable(const vector<string>& inputString) co
 		}
 		return result;
 	};
-	
-	std::cout << "\n";
+
+	//разбиение
 	size_t currentSplitSize = 2;
 	while (currentSplitSize <= inputString.size()) {
 		for (size_t cellIndex = 0; cellIndex < table[currentSplitSize - 1].size(); cellIndex++) {
@@ -910,24 +900,88 @@ parseTable CFG::getCockeYoungerKasamiTable(const vector<string>& inputString) co
 			while (subSplitSize < currentSplitSize) {
 				
 				 neededRules.merge(getAllPossibleRules(table[subSplitSize - 1][cellIndex],
-					table[currentSplitSize - subSplitSize - 1][cellIndex + subSplitSize]));
+														table[currentSplitSize - subSplitSize - 1][cellIndex + subSplitSize]));
 				subSplitSize++;
 			}
 			set<string> neededNonTerminals = findAllNonTerminals(neededRules);
 			table[currentSplitSize - 1][cellIndex] = neededNonTerminals;
-			printSet(table[currentSplitSize - 1][cellIndex]);
 		}
-		std::cout << "\n";
 		currentSplitSize++;
 	}
-	return table;
+
+	if (!table[inputString.size() - 1][0].contains(newGrammar.mAxiom.mLexem)) {
+		std::cout << "\n Input string is not a member of a language";
+		return;
+	}
+	std::cout << "\n Input string is a member of a language.\n Parse tree:\n";
+	auto printSet = [](const set<string>& st) {
+		for (const auto& str : st)
+			std::cout<< str << " ";
+		std::cout << " | ";
+	};
+
+	for (int z = 0; z < table.size(); z++) {
+		for (int c = 0; c < table[z].size(); c++)
+			printSet(table[z][c]);
+		cout << "\n";
+	}
+
+	std::vector<size_t> ruleIndexes;
+	std::function<void(size_t, size_t, string)> cykGen = [&](const size_t& i, const size_t& j, const string& currentNonTerminal) {
+		if (i >= inputString.size()) return;
+
+		size_t counter = 1;
+		if (j == 1) {
+			for (const auto& [NT, rules] : newGrammar.mRules) {
+				if (NT.mLexem != currentNonTerminal)
+					counter += rules.size();
+				else {
+					for (const auto& rule : rules) {
+						if (rule[0].mLexem == inputString[i]) {
+							ruleIndexes.push_back(counter);
+							return;
+						}
+						counter++;
+					}
+				}
+			}
+		}
+
+		size_t currentSplitSize = 1;
+		while (currentSplitSize <= j) {
+			counter = 1;
+			set<pair<string, string>> neededRules;
+			neededRules.merge(getAllPossibleRules(table[currentSplitSize - 1][i],
+				table[j - currentSplitSize - 1][i+currentSplitSize]));
+			for (const auto& [NT, rules] : newGrammar.mRules) {
+				if (NT.mLexem != currentNonTerminal) { counter += rules.size(); continue; };
+				for (const auto& rule : rules) {
+					if(rule.size()==2)
+						for (const auto& neededRule : neededRules) {
+							if (rule[0].mLexem == neededRule.first && rule[1].mLexem == neededRule.second) {
+								ruleIndexes.push_back(counter);
+								cykGen(i,currentSplitSize,neededRule.first);
+								cykGen(i + currentSplitSize, j - currentSplitSize, neededRule.second);
+								return;
+							}
+						}
+					counter++;
+				}
+			}
+			currentSplitSize++;
+		}
+		return;
+	};
+
+	cykGen(0, inputString.size(), newGrammar.mAxiom.mLexem);
+
+	const char* delim = "";
+	for (auto iter = ruleIndexes.begin(); iter != ruleIndexes.end(); ++iter) {
+		std::cout << delim << *iter;
+		delim = "->";
+	}
 }
 
-void CFG::cockeYoungerKasamiOutput(const parseTable& _parseTable) const noexcept
-{
-	auto newGrammar = makeChomskyNormalForm();
-
-}
 
 set<Token> CFG::getGoodNonTerminals() const 
 {

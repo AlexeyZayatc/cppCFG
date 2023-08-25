@@ -5,7 +5,11 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <ranges>
+#include <functional>
+#include <iomanip>
 
+#include "Exception.h"
 #include "Token.h"
 using namespace std;
 
@@ -46,8 +50,7 @@ public:
 	CFG removeChainRules() const;
 	CFG makeChomskyNormalForm() const;
 	CFG makeGreibachNormalForm() const;
-	parseTable getCockeYoungerKasamiTable(const vector<string>& inputString) const noexcept;
-	void cockeYoungerKasamiOutput(const parseTable& _parseTable) const noexcept;
+	void CockeYoungerKasamiTree(const vector<string>& inputString) const noexcept;
 
 	wstring toWString() const;
 private:
@@ -59,7 +62,6 @@ private:
 		const set<Token>& lambdaNT,
 		const set<Token>& terminalNT) const ;
 	void removeDublicateRules(ruleDict& rules) ;
-	size_t cykGen(const size_t& i, const size_t& j, const string& currentNonTerminal) const noexcept;
 
 	set<Token> getLambdaNonTerminals() const ;
 	set<Token> getGoodNonTerminals() const ;
