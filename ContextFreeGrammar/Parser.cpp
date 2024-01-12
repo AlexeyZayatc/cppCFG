@@ -14,7 +14,7 @@ Node* Parser::mainFunc()
 	return new NodeTranslationUnit((NodeCompoundStatement*) compoundStatement());
 }
 
-//здесь не только каст, но и константы и переменные
+//Р·РґРµСЃСЊ РЅРµ С‚РѕР»СЊРєРѕ РєР°СЃС‚, РЅРѕ Рё РєРѕРЅСЃС‚Р°РЅС‚С‹ Рё РїРµСЂРµРјРµРЅРЅС‹Рµ
 Node* Parser::castExpression()
 {
 	string name = (*itToken).mLexem;
@@ -361,7 +361,7 @@ Node* Parser::parse()
 	}
 }
 
-void Parser::require(c_typeOfLexem type) { //просто для красоты на вход кидаю enum
+void Parser::require(c_typeOfLexem type) { //РїСЂРѕСЃС‚Рѕ РґР»СЏ РєСЂР°СЃРѕС‚С‹ РЅР° РІС…РѕРґ РєРёРґР°СЋ enum
 	if ((*itToken).mLexemType != C_PRESENTATION[type])
 	{
 		error("Excepted token : " + C_PRESENTATION[type]);

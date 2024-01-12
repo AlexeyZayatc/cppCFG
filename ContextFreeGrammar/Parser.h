@@ -52,7 +52,7 @@ struct Node {
 };
 
 
-//тип например int float ...
+//С‚РёРї РЅР°РїСЂРёРјРµСЂ int float ...
 struct NodeType : public Node
 {
 	NodeType(string type) : type(type) {}
@@ -76,7 +76,7 @@ struct NodeType : public Node
 };
 
 
-//переменная, по сути все ID считаются за переменные в этом парсере
+//РїРµСЂРµРјРµРЅРЅР°В¤, РїРѕ СЃСѓС‚Рё РІСЃРµ ID СЃС‡РёС‚Р°СЋС‚СЃВ¤ Р·Р° РїРµСЂРµРјРµРЅРЅС‹Рµ РІ СЌС‚РѕРј РїР°СЂСЃРµСЂРµ
 struct NodeVar : public Node
 {
 	NodeVar(string name) : name(name) {}
@@ -90,7 +90,7 @@ struct NodeVar : public Node
 	string name;
 };
 
-//например: 20, 20.1, 'b', false
+//РЅР°РїСЂРёРјРµСЂ: 20, 20.1, 'b', false
 struct NodeConstant : Node
 {
 	NodeConstant(string val, NodeType* type) : val(val), type(type) {}
@@ -105,7 +105,7 @@ struct NodeConstant : Node
 	NodeType* type;
 };
 
-//(int) d; (float) b, то есть содержит инфу о касте
+//(int) d; (float) b, С‚Рѕ РµСЃС‚СЊ СЃРѕРґРµСЂР¶РёС‚ РёРЅС„Сѓ Рѕ РєР°СЃС‚Рµ
 struct NodeCast : Node
 {
 	NodeCast(NodeType* type, Node* expr) : type(type), expr(expr) {}
@@ -120,7 +120,7 @@ struct NodeCast : Node
 	Node* expr;
 };
 
-//-b, +d, !c, !1 (b,d,c - переменные)
+//-b, +d, !c, !1 (b,d,c - РїРµСЂРµРјРµРЅРЅС‹Рµ)
 struct NodeUnary : Node
 {
 	NodeUnary(string unaryOp, NodeCast* expr) : unaryOp(unaryOp), expr(expr) {}
@@ -135,7 +135,7 @@ struct NodeUnary : Node
 	NodeCast* expr;
 };
 
-//содержит операции и их операнды
+//СЃРѕРґРµСЂР¶РёС‚ РѕРїРµСЂР°С†РёРё Рё РёС… РѕРїРµСЂР°РЅРґС‹
 struct NodeBinaryOperator : Node
 {
 	NodeBinaryOperator(Node* left, string op, Node* right) : left(left), op(op), right(right) {}
@@ -187,7 +187,7 @@ struct NodeContinue : Node {
 	};
 };
 
-//присваивание значения переменной
+//РїСЂРёСЃРІР°РёРІР°РЅРёРµ Р·РЅР°С‡РµРЅРёВ¤ РїРµСЂРµРјРµРЅРЅРѕР№
 struct NodeAssigning : Node
 {
 	NodeAssigning(NodeVar* var, Node* expr) : var(var), expr(expr) {}
@@ -202,7 +202,7 @@ struct NodeAssigning : Node
 	Node* expr;
 };
 
-//содержит переменную, которую объявляем
+//СЃРѕРґРµСЂР¶РёС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ, РєРѕС‚РѕСЂСѓСЋ РѕР±СЉВ¤РІР»В¤РµРј
 struct NodeDeclarator : Node
 {
 	NodeDeclarator(NodeVar* var) : var(var) {};
@@ -216,7 +216,7 @@ struct NodeDeclarator : Node
 	NodeVar* var;
 };
 
-//содержит переменную, которую объявляем и значение, которое ей присваивается
+//СЃРѕРґРµСЂР¶РёС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ, РєРѕС‚РѕСЂСѓСЋ РѕР±СЉВ¤РІР»В¤РµРј Рё Р·РЅР°С‡РµРЅРёРµ, РєРѕС‚РѕСЂРѕРµ РµР№ РїСЂРёСЃРІР°РёРІР°РµС‚СЃВ¤
 struct NodeInitDeclarator : NodeDeclarator {
 	NodeInitDeclarator(NodeVar* var, Node* assign) : NodeDeclarator(var), assign(assign) {};
 	virtual std::string generate() override {
@@ -229,7 +229,7 @@ struct NodeInitDeclarator : NodeDeclarator {
 	Node* assign;
 };
 
-//объявление переменных
+//РѕР±СЉВ¤РІР»РµРЅРёРµ РїРµСЂРµРјРµРЅРЅС‹С…
 struct NodeDeclaration : Node
 {
 	NodeDeclaration(NodeType* type, vector<NodeDeclarator*>& declarators) : type(type), declarators(declarators) {};
@@ -271,7 +271,7 @@ struct NodeDeclaration : Node
 	vector<NodeDeclarator*> declarators;
 };
 
-//лист экспрешенов, например: b, a+3, c%2, (int) a
+//Р»РёСЃС‚ СЌРєСЃРїСЂРµС€РµРЅРѕРІ, РЅР°РїСЂРёРјРµСЂ: b, a+3, c%2, (int) a
 struct NodeExpressionList : Node
 {
 	NodeExpressionList(vector<Node*>& expressions) : expressions(expressions) {}
@@ -378,7 +378,7 @@ struct NodeScanF : NodeReservedFunc
 	};
 };
 
-//блок { }
+//Р±Р»РѕРє { }
 class NodeCompoundStatement : public Node
 {
 public:
@@ -402,7 +402,7 @@ public:
 	vector<Node*> children;
 };
 
-//начало программы (аксиома)
+//РЅР°С‡Р°Р»Рѕ РїСЂРѕРіСЂР°РјРјС‹ (Р°РєСЃРёРѕРјР°)
 class NodeTranslationUnit :public Node
 {
 public:
@@ -425,7 +425,7 @@ public:
 
 	Node* mainFunc();
 
-	//здесь не только каст, но и константы и переменные
+	//Р·РґРµСЃСЊ РЅРµ С‚РѕР»СЊРєРѕ РєР°СЃС‚, РЅРѕ Рё РєРѕРЅСЃС‚Р°РЅС‚С‹ Рё РїРµСЂРµРјРµРЅРЅС‹Рµ
 	Node* castExpression();
 
 	Node* multiplicativeExpression();

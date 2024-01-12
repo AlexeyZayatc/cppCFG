@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include "Parser.h"
 #include "CFG.h"
 #include "Token.h"

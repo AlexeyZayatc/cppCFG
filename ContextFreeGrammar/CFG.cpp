@@ -1,4 +1,4 @@
-﻿#include "CFG.h"
+#include "CFG.h"
 
 
 CFG::CFG(const set<string>& nonTerminals,
