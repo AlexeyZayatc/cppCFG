@@ -3,10 +3,10 @@
 Optimizer::Optimizer(Node* _start) : start(_start) {}
 
 void Optimizer::optimizeCode() {
-	deleteUnusedVars2();
+	removeUselessVars2();
 }
 
-void Optimizer::deleteUnusedVars1() {
+void Optimizer::removeUselessVars1() {
 	std::map<std::string, size_t> namesCount;
 	std::map<std::string, size_t> oldNamesCount;
 	do {
@@ -55,17 +55,17 @@ bool Optimizer::recursiveVarDelete(Node* current, Node* parent, std::map<std::st
 	return false;
 }
 
-void Optimizer::deleteUnusedVars2() {
+void Optimizer::removeUselessVars2() {
 	std::map<std::string, size_t> namesCount;
 	bool found;
 	do {
 		found = false;
 		namesCount.clear();
-		deleteUnusedVarsRecursive(start, namesCount, found);
+		removeUselessVarsRecursive(start, namesCount, found);
 	} while (found);
 }
 
-void Optimizer::deleteUnusedVarsRecursive(Node* current, std::map<std::string, size_t>& namesCount, bool& found) {
+void Optimizer::removeUselessVarsRecursive(Node* current, std::map<std::string, size_t>& namesCount, bool& found) {
 	for (auto& child : current->children) {
 		std::string nodeType = child->getNodeType();
 		if (nodeType == "NodeDeclaration") {
@@ -81,7 +81,7 @@ void Optimizer::deleteUnusedVarsRecursive(Node* current, std::map<std::string, s
 						++namesCount[varName];
 					}
 					else
-						deleteUnusedVarsRecursive(initDecl->assign, namesCount, found);
+						removeUselessVarsRecursive(initDecl->assign, namesCount, found);
 				}
 			}
 		}
@@ -90,7 +90,7 @@ void Optimizer::deleteUnusedVarsRecursive(Node* current, std::map<std::string, s
 			++namesCount[varName];
 		}
 		else if (nodeType != "NodeAssigning") {
-			deleteUnusedVarsRecursive(child, namesCount, found);
+			removeUselessVarsRecursive(child, namesCount, found);
 		}
 	}
 
