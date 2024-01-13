@@ -1089,9 +1089,8 @@ public:
 			auto start = pars.parse();
 			Generator gen(start);
 			const std::string answer = "begin\n"
-"var b:=3;\n"
-"var c:=2;\n"
-"var d:=3;\n"
+"var b:=3; \n"
+"var c:=2; var d:=3; \n"
 "d:=(5 + 3) * 2  + 1 * (5 + 0) ;\n"
 "if (c = 2) or (d < 100)  then \n"
 "begin\n"
