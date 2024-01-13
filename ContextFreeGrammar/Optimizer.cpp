@@ -9,13 +9,16 @@ void Optimizer::optimizeCode() {
 void Optimizer::removeUselessVars1() {
 	std::map<std::string, size_t> namesCount;
 	std::map<std::string, size_t> oldNamesCount;
+	recursiveTraverse(start, nullptr, namesCount);
 	do {
-		recursiveTraverse(start, nullptr, namesCount);
 		oldNamesCount = namesCount;
 
 		recursiveVarDelete(start, nullptr, namesCount);
-	} while (oldNamesCount == namesCount);
 
+		namesCount.clear();
+
+		recursiveTraverse(start, nullptr, namesCount);
+	} while (oldNamesCount != namesCount);
 }
 
 void Optimizer::recursiveTraverse(Node* current, Node* parent, std::map<std::string, size_t>& namesCount)
