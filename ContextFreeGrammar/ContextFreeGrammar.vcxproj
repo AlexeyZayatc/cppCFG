@@ -136,6 +136,7 @@
     <ClInclude Include="Generator.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Exception.h" />
+    <ClInclude Include="Optimizer.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="SymbolTable.h" />
     <ClInclude Include="Token.h" />
@@ -145,6 +146,7 @@
     <ClCompile Include="Generator.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="Exception.cpp" />
+    <ClCompile Include="Optimizer.cpp" />
     <ClCompile Include="Parser.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="SymbolTable.cpp" />
@@ -152,6 +154,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="a.txt" />
+    <Text Include="optimizedProgram.txt" />
     <Text Include="simplePascalOutput.txt" />
     <Text Include="simpleProgram.txt" />
     <Text Include="simpleProgramOutput.txt" />

@@ -1,0 +1,10 @@
+begin
+var a:=2; 
+var b: real;
+b:=3 + 2;
+if a = b then 
+begin
+b:=2;
+end;
+read(a);
+end.

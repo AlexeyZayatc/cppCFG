@@ -1,9 +1,11 @@
 int main() {
-	float g=2, x=3, y, u=2.3;
-	int a;
-	int b = 2;
-	float c,d,e;
-	bool my=false;
-	bool mymy, meme;
-	bool zxc=true;
+	int a = 2;
+	float b;
+	b = 3 + 2;
+	int c;
+	if (a==b){
+		b= 2;
+	}
+	c = a + b;
+	scanf(a);
 }

@@ -13,11 +13,20 @@ struct Node {
 	Node() = default;
 	virtual std::string generate() = 0;
 	virtual std::string toStr(int level = 0) = 0;
+	virtual std::string getNodeType() = 0;
 
 	char tabSym = ' ';
 	string tab = "    ";
 	inline string getTab(int level) {
 		return string(level * 4, tabSym);
+	}
+
+	void deleteChild(Node* child) {
+		for(auto it = children.begin(); it!=children.end(); it++)
+			if (*it == child) {
+				children.erase(it);
+				break;
+			}
 	}
 
 	std::string getOperation(const std::string& operation) {
@@ -49,6 +58,7 @@ struct Node {
 			return "or";
 		return "";
 	};
+	std::vector<Node*> children;
 };
 
 
@@ -71,12 +81,12 @@ struct NodeType : public Node
 		string out = getTab(level);
 		return out + "type" + '\n' + out + tab + type + '\n';
 	};
-
+	virtual std::string getNodeType() override { return "NodeType"; }
 	string type;
 };
 
 
-//переменна¤, по сути все ID считаютс¤ за переменные в этом парсере
+//переменная, по сути все ID считаются за переменные в этом парсере
 struct NodeVar : public Node
 {
 	NodeVar(string name) : name(name) {}
@@ -87,13 +97,16 @@ struct NodeVar : public Node
 		string out = getTab(level);
 		return out + "name" + '\n' + out + tab + name + '\n';
 	};
+	virtual std::string getNodeType() override { return "NodeVar"; }
 	string name;
 };
 
 //например: 20, 20.1, 'b', false
 struct NodeConstant : Node
 {
-	NodeConstant(string val, NodeType* type) : val(val), type(type) {}
+	NodeConstant(string val, NodeType* type) : val(val), type(type) {
+		children.push_back(type);
+	}
 	virtual std::string generate() override {
 		return val;
 	}
@@ -101,6 +114,7 @@ struct NodeConstant : Node
 		string out = getTab(level);
 		return out + "val" + '\n' + out + tab + val + '\n' + out + typeid(*type).name() + '\n' + type->toStr(level + 1) + '\n';
 	};
+	virtual std::string getNodeType() override { return "NodeConstant"; }
 	string val;
 	NodeType* type;
 };
@@ -108,7 +122,10 @@ struct NodeConstant : Node
 //(int) d; (float) b, то есть содержит инфу о касте
 struct NodeCast : Node
 {
-	NodeCast(NodeType* type, Node* expr) : type(type), expr(expr) {}
+	NodeCast(NodeType* type, Node* expr) : type(type), expr(expr) {
+		children.push_back(type);
+		children.push_back(expr);
+	}
 	virtual std::string generate() override {
 		return "(" + type->generate() + ")" + expr->generate();
 	}
@@ -116,6 +133,7 @@ struct NodeCast : Node
 		string out = getTab(level);
 		return out + typeid(*type).name() + '\n' + type->toStr(level + 1) + '\n' + out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override { return "NodeCast"; }
 	NodeType* type;
 	Node* expr;
 };
@@ -123,7 +141,9 @@ struct NodeCast : Node
 //-b, +d, !c, !1 (b,d,c - переменные)
 struct NodeUnary : Node
 {
-	NodeUnary(string unaryOp, NodeCast* expr) : unaryOp(unaryOp), expr(expr) {}
+	NodeUnary(string unaryOp, NodeCast* expr) : unaryOp(unaryOp), expr(expr) {
+		children.push_back(expr);
+	}
 	virtual std::string generate() override {
 		return getOperation(unaryOp) + expr->generate();
 	}
@@ -131,6 +151,7 @@ struct NodeUnary : Node
 		string out = getTab(level);
 		return out + "unaryOp" + '\n' + out + tab + unaryOp + '\n' + out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override { return "NodeUnary"; }
 	string unaryOp;
 	NodeCast* expr;
 };
@@ -138,7 +159,10 @@ struct NodeUnary : Node
 //содержит операции и их операнды
 struct NodeBinaryOperator : Node
 {
-	NodeBinaryOperator(Node* left, string op, Node* right) : left(left), op(op), right(right) {}
+	NodeBinaryOperator(Node* left, string op, Node* right) : left(left), op(op), right(right) {
+		children.push_back(left);
+		children.push_back(right);
+	}
 	virtual std::string generate() override {
 
 
@@ -162,6 +186,7 @@ struct NodeBinaryOperator : Node
 		string out = getTab(level);
 		return out + "op" + '\n' + out + tab + op + '\n' + out + typeid(*left).name() + '\n' + left->toStr(level + 1) + '\n' + out + typeid(*right).name() + '\n' + right->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodeBinaryOperator"; }
 	Node* left;
 	string op;
 	Node* right;
@@ -176,6 +201,7 @@ struct NodeBreak : Node {
 		string out = getTab(level);
 		return out + "Break\n";
 	};
+	virtual std::string getNodeType() override { return "NodeBreak"; }
 };
 struct NodeContinue : Node {
 	virtual std::string generate() {
@@ -185,12 +211,16 @@ struct NodeContinue : Node {
 		string out = getTab(level);
 		return out + "Continue\n";
 	};
+	virtual std::string getNodeType() override { return "NodeContinue"; }
 };
 
-//присваивание значени¤ переменной
+//присваивание значения переменной
 struct NodeAssigning : Node
 {
-	NodeAssigning(NodeVar* var, Node* expr) : var(var), expr(expr) {}
+	NodeAssigning(NodeVar* var, Node* expr) : var(var), expr(expr) {
+		children.push_back(var);
+		children.push_back(expr);
+	}
 	virtual std::string generate() override {
 		return var->generate() + ":=" + expr->generate() + ";\n";
 	}
@@ -198,14 +228,17 @@ struct NodeAssigning : Node
 		string out = getTab(level);
 		return out + typeid(*var).name() + '\n' + var->toStr(level + 1) + '\n' + out + typeid(*expr).name() + '\n' + expr->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override { return "NodeAssigning"; }
 	NodeVar* var;
 	Node* expr;
 };
 
-//содержит переменную, которую объ¤вл¤ем
+//содержит переменную, которую объявляем
 struct NodeDeclarator : Node
 {
-	NodeDeclarator(NodeVar* var) : var(var) {};
+	NodeDeclarator(NodeVar* var) : var(var) {
+		children.push_back(var);
+	};
 	virtual std::string generate() override {
 		return var->generate();
 	}
@@ -213,12 +246,15 @@ struct NodeDeclarator : Node
 		string out = getTab(level);
 		return out + typeid(*var).name() + '\n' + var->toStr(level + 1) + '\n';
 	};
+	virtual std::string getNodeType() override { return "NodeDeclarator"; }
 	NodeVar* var;
 };
 
-//содержит переменную, которую объ¤вл¤ем и значение, которое ей присваиваетс¤
+//содержит переменную, которую объявляем и значение, которое ей присваивается
 struct NodeInitDeclarator : NodeDeclarator {
-	NodeInitDeclarator(NodeVar* var, Node* assign) : NodeDeclarator(var), assign(assign) {};
+	NodeInitDeclarator(NodeVar* var, Node* assign) : NodeDeclarator(var), assign(assign) {
+		children.push_back(assign);
+	};
 	virtual std::string generate() override {
 		return "var " + var->generate() + ":=" + assign->generate();
 	}
@@ -226,13 +262,18 @@ struct NodeInitDeclarator : NodeDeclarator {
 		string out = getTab(level);
 		return out + typeid(*var).name() + '\n' + var->toStr(level + 1) + '\n' + out + typeid(*assign).name() + '\n' + assign->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodeInitDeclarator"; }
 	Node* assign;
 };
 
-//объ¤вление переменных
+//объявление переменных
 struct NodeDeclaration : Node
 {
-	NodeDeclaration(NodeType* type, vector<NodeDeclarator*>& declarators) : type(type), declarators(declarators) {};
+	NodeDeclaration(NodeType* type, vector<NodeDeclarator*>& declarators) : type(type), declarators(declarators) {
+		children.push_back(type);
+		for (const auto& decl : declarators)
+			children.push_back(decl);
+	};
 	virtual std::string generate() override {
 		std::string sDeclarators;
 		std::vector<std::string> declVec;
@@ -267,6 +308,7 @@ struct NodeDeclaration : Node
 		}
 		return realOut;
 	};
+	virtual std::string getNodeType() override { return "NodeDeclaration"; }
 	NodeType* type;
 	vector<NodeDeclarator*> declarators;
 };
@@ -274,7 +316,10 @@ struct NodeDeclaration : Node
 //лист экспрешенов, например: b, a+3, c%2, (int) a
 struct NodeExpressionList : Node
 {
-	NodeExpressionList(vector<Node*>& expressions) : expressions(expressions) {}
+	NodeExpressionList(vector<Node*>& expressions) : expressions(expressions) {
+		for (const auto& expr : expressions)
+			children.push_back(expr);
+	}
 	virtual std::string generate() override {
 		std::string result;
 		for (const auto expr : expressions) {
@@ -290,13 +335,17 @@ struct NodeExpressionList : Node
 		}
 		return realOut;
 	};
+	virtual std::string getNodeType() override { return "NodeExpressionList"; }
 	vector<Node*> expressions;
 };
 
 //if
 struct NodeIf : Node
 {
-	NodeIf(NodeExpressionList* condition, Node* ifStatement) : condition(condition), ifStatement(ifStatement) {}
+	NodeIf(NodeExpressionList* condition, Node* ifStatement) : condition(condition), ifStatement(ifStatement) {
+		children.push_back(condition);
+		children.push_back(ifStatement);
+	}
 	virtual std::string generate() override {
 		return "if " + condition->generate() + " then \n" + ifStatement->generate();
 	}
@@ -304,6 +353,7 @@ struct NodeIf : Node
 		string out = getTab(level);
 		return out + typeid(*condition).name() + '\n' + condition->toStr(level + 1) + '\n' + out + typeid(*ifStatement).name() + '\n' + ifStatement->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override { return "NodeIf"; }
 	NodeExpressionList* condition;
 	Node* ifStatement;
 };
@@ -311,7 +361,9 @@ struct NodeIf : Node
 //ifelse
 struct NodeIfElse : NodeIf
 {
-	NodeIfElse(NodeExpressionList* condition, Node* ifStatement, Node* elseStatement) : NodeIf(condition, ifStatement), elseStatement(elseStatement) {}
+	NodeIfElse(NodeExpressionList* condition, Node* ifStatement, Node* elseStatement) : NodeIf(condition, ifStatement), elseStatement(elseStatement) {
+		children.push_back(elseStatement);
+	}
 	virtual std::string generate() override {
 		std::string ifBody = ifStatement->generate();
 		ifBody = ifBody.substr(0, ifBody.size() - 5);
@@ -322,13 +374,17 @@ struct NodeIfElse : NodeIf
 		string out = getTab(level);
 		return out + typeid(*condition).name() + '\n' + condition->toStr(level + 1) + '\n' + out + typeid(*ifStatement).name() + '\n' + ifStatement->toStr(level + 1) + '\n' + out + typeid(*elseStatement).name() + '\n' + elseStatement->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodeIfElse"; }
 	Node* elseStatement;
 };
 
 //while
 struct NodeWhile : Node
 {
-	NodeWhile(NodeExpressionList* condition, Node* statement) : condition(condition), statement(statement) {}
+	NodeWhile(NodeExpressionList* condition, Node* statement) : condition(condition), statement(statement) {
+		children.push_back(condition);
+		children.push_back(statement);
+	}
 	virtual std::string generate() override {
 		return "while " + condition->generate() + " do\n" + statement->generate();
 	}
@@ -336,6 +392,7 @@ struct NodeWhile : Node
 		string out = getTab(level);
 		return out + typeid(*condition).name() + '\n' + condition->toStr(level + 1) + '\n' + out + typeid(*statement).name() + '\n' + statement->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodeWhile"; }
 	NodeExpressionList* condition;
 	Node* statement;
 };
@@ -343,7 +400,10 @@ struct NodeWhile : Node
 //printf, scanf
 struct NodeReservedFunc : public Node
 {
-	NodeReservedFunc(NodeExpressionList* parameters) : parameters(parameters) {}
+	NodeReservedFunc(NodeExpressionList* parameters) : parameters(parameters) {
+
+		children.push_back(parameters);
+	}
 	virtual std::string generate() override {
 		return "(" + parameters->generate() + ")";
 	}
@@ -351,12 +411,15 @@ struct NodeReservedFunc : public Node
 		string out = getTab(level);
 		return out + typeid(*parameters).name() + '\n' + parameters->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodeReservedFunc"; }
 	NodeExpressionList* parameters;
 };
 
 struct NodePrintF : public NodeReservedFunc
 {
-	NodePrintF(NodeExpressionList* parameters) : NodeReservedFunc(parameters) {}
+	NodePrintF(NodeExpressionList* parameters) : NodeReservedFunc(parameters) {
+	
+	}
 	virtual std::string generate() override {
 		return "write(" + parameters->generate() + ");\n";
 	}
@@ -364,6 +427,7 @@ struct NodePrintF : public NodeReservedFunc
 		string out = getTab(level);
 		return out + typeid(*parameters).name() + '\n' + parameters->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodePrintF"; }
 };
 
 struct NodeScanF : NodeReservedFunc
@@ -376,13 +440,17 @@ struct NodeScanF : NodeReservedFunc
 		string out = getTab(level);
 		return out + typeid(*parameters).name() + '\n' + parameters->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override  { return "NodeScanF"; }
 };
 
 //блок { }
 class NodeCompoundStatement : public Node
 {
 public:
-	NodeCompoundStatement(vector<Node*>& children) : children(children) {};
+	NodeCompoundStatement(vector<Node*>& _children)  {
+		for (auto& child : _children)
+			children.push_back(child);
+	};
 	virtual std::string generate() override {
 		std::string program = "begin\n";
 		for (auto child : children) {
@@ -399,14 +467,16 @@ public:
 		}
 		return realOut;
 	};
-	vector<Node*> children;
+	virtual std::string getNodeType() override { return "NodeCompoundStatement"; }
 };
 
 //начало программы (аксиома)
 class NodeTranslationUnit :public Node
 {
 public:
-	NodeTranslationUnit(NodeCompoundStatement* compStatement) : mainFunc(compStatement) {}
+	NodeTranslationUnit(NodeCompoundStatement* compStatement) : mainFunc(compStatement) {
+		children.push_back(compStatement);
+	}
 	virtual std::string generate() override {
 		return mainFunc->generate();
 	}
@@ -414,6 +484,7 @@ public:
 		string out = getTab(level);
 		return out + typeid(*mainFunc).name() + '\n' + mainFunc->toStr(level + 1);
 	};
+	virtual std::string getNodeType() override { return "NodeTranslationUnit"; }
 
 	NodeCompoundStatement* mainFunc;
 };

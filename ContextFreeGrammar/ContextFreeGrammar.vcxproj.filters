@@ -39,6 +39,9 @@
     <ClInclude Include="Parser.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="Optimizer.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CFG.cpp">
@@ -65,6 +68,9 @@
     <ClCompile Include="SymbolTable.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="Optimizer.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="simpleProgram.txt">
@@ -77,6 +83,9 @@
       <Filter>Файлы ресурсов</Filter>
     </Text>
     <Text Include="a.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="optimizedProgram.txt">
       <Filter>Файлы ресурсов</Filter>
     </Text>
   </ItemGroup>
