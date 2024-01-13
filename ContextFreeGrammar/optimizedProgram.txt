@@ -1,21 +1,18 @@
 begin
-if true then 
-begin
-var b:=3; 
-if b = 3 then 
+var a:=3; 
+var d:=a; 
+d:=15;
+if d = a then 
 begin
 end;
-end;
-if true then 
+if a = d then 
 begin
-var i:=0; 
-while i < 20 do
-begin
+var i:=5; 
 i:=i + 1;
-end;
-var b:=3; 
-if b = 3 then 
 begin
+while i < 2 do
+begin
+end;
 end;
 end;
 end.

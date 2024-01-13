@@ -1,19 +1,19 @@
 int main() {
-	if(true){
-	int a = 2;
-	int b = 3;
-	if (b==3){
-		}
+	int b, a = 3, c = 4;
+	int d = a;
+	d = 15; c = 3;
+	if (d == a) {
+		int i = 0;
 	}
-	if(true){
-	int a = 2;
-	int i = 0;
-	while(i < 20){
-		int d = 20;
-		i=i+1;
-	}
-	int b = 3;
-	if (b==3){
+	if (a == d) {
+		int i = 5;
+		i = i + 1;
+		{
+			while (i < 2) {
+				c = 251;
+			}
+			int f = 5;
+			f = f + f + 3;
 		}
 	}
 }

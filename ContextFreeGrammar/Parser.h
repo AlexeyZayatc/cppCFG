@@ -222,7 +222,9 @@ struct NodeAssigning : Node
 		children.push_back(expr);
 	}
 	virtual std::string generate() override {
-		return var->generate() + ":=" + expr->generate() + ";\n";
+		if (children.size() == 2)
+			return var->generate() + ":=" + expr->generate() + ";\n";
+		return "";
 	}
 	virtual std::string toStr(int level) override {
 		string out = getTab(level);
@@ -240,7 +242,9 @@ struct NodeDeclarator : Node
 		children.push_back(var);
 	};
 	virtual std::string generate() override {
-		return var->generate();
+		if (children.size() == 1)
+			return var->generate();
+		return "";
 	}
 	virtual std::string toStr(int level) override {
 		string out = getTab(level);
@@ -256,7 +260,9 @@ struct NodeInitDeclarator : NodeDeclarator {
 		children.push_back(assign);
 	};
 	virtual std::string generate() override {
-		return "var " + var->generate() + ":=" + assign->generate();
+		if (children.size() == 2)
+			return "var " + var->generate() + ":=" + assign->generate();
+		return "";
 	}
 	virtual std::string toStr(int level) override {
 		string out = getTab(level);
@@ -275,30 +281,35 @@ struct NodeDeclaration : Node
 			children.push_back(decl);
 	};
 	virtual std::string generate() override {
-		std::string sDeclarators;
-		std::vector<std::string> declVec;
-		auto sType = type->generate();
-		// id1,id2,id3 : type;
-		for (const auto decl : declarators) {
-			std::string nm = typeid(*decl).name();
-			if (nm == "struct NodeInitDeclarator")
-				sDeclarators += decl->generate() + "; ";
-			else
-				declVec.push_back(decl->generate());
-		}
-		std::string multipleDecl = "var ";
-		for (const auto& id : declVec) {
-			if (id != declVec.back())
-				multipleDecl += id + ", ";
-			else
-				multipleDecl += id +": " + sType;
-		}
-		if (multipleDecl != "var ")
-			sDeclarators += multipleDecl + ";\n";
-		else
-			sDeclarators += "\n";
+		if (children.size() > 1) {
+			std::string sDeclarators;
+			std::vector<std::string> declVec;
+			auto sType = children[0]->generate();
+			// id1,id2,id3 : type;
+			for (const auto decl : children) {
+				if (decl->getNodeType() == "NodeType") continue;
 
-		return sDeclarators;
+				std::string nm = typeid(*decl).name();
+				if (nm == "struct NodeInitDeclarator")
+					sDeclarators += decl->generate() + "; ";
+				else
+					declVec.push_back(decl->generate());
+			}
+			std::string multipleDecl = "var ";
+			for (const auto& id : declVec) {
+				if (id != declVec.back())
+					multipleDecl += id + ", ";
+				else
+					multipleDecl += id + ": " + sType;
+			}
+			if (multipleDecl != "var ")
+				sDeclarators += multipleDecl + ";\n";
+			else
+				sDeclarators += "\n";
+
+			return sDeclarators;
+		}
+		return "";
 	}
 	virtual std::string toStr(int level) override {
 		string out = getTab(level);
@@ -321,11 +332,14 @@ struct NodeExpressionList : Node
 			children.push_back(expr);
 	}
 	virtual std::string generate() override {
-		std::string result;
-		for (const auto expr : expressions) {
-			result += expr->generate() + ",";
+		if (children.size() > 0) {
+			std::string result;
+			for (const auto expr : expressions) {
+				result += expr->generate() + ",";
+			}
+			return result.substr(0, result.size() - 1);
 		}
-		return result.substr(0, result.size() - 1);
+		return "";
 	}
 	virtual std::string toStr(int level) override {
 		string out = getTab(level);
