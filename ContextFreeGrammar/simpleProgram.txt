@@ -1,11 +1,19 @@
 int main() {
+	if(true){
 	int a = 2;
-	float b;
-	b = 3 + 2;
-	int c;
-	if (a==b){
-		b= 2;
+	int b = 3;
+	if (b==3){
+		}
 	}
-	c = a + b;
-	scanf(a);
+	if(true){
+	int a = 2;
+	int i = 0;
+	while(i < 20){
+		int d = 20;
+		i=i+1;
+	}
+	int b = 3;
+	if (b==3){
+		}
+	}
 }
